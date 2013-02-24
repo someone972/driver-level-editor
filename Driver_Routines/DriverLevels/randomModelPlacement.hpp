@@ -6,6 +6,9 @@
 #include "../ioFuncs.hpp"
 #include "../../vector.hpp"
 
+//Important note: Random model placements aren't used anywhere in the current executable, but are still included in the level.
+//  Perhaps they were used to create data included in the executable?
+
 class RandomModelPlacement
 {
     public:

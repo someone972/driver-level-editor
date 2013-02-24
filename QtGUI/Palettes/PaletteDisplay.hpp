@@ -1,7 +1,7 @@
 #ifndef PALETTE_DISPLAY_HPP
 #define PALETTE_DISPLAY_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 #include "../../Driver_Routines/driver_levels.hpp"
 
 struct color_index_info

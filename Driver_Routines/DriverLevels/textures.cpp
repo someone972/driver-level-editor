@@ -13,10 +13,10 @@ TextureDefinition::TextureDefinition()
 TextureDefinition::TextureDefinition(unsigned char nx,unsigned char ny,unsigned char nw,unsigned char nh,const char* newName)
 {
     memset(name,0,9);
-    x = x;
-    y = y;
-    w = w;
-    h = h;
+    x = nx;
+    y = ny;
+    w = nw;
+    h = nh;
     strncpy(name,newName,8);
 };
 

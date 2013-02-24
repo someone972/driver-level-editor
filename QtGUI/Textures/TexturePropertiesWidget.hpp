@@ -1,7 +1,7 @@
 #ifndef TEXTURE_PROPERTIES_WIDGET_HPP
 #define TEXTURE_PROPERTIES_WIDGET_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 #include "../../Driver_Routines/driver_levels.hpp"
 
 class TexturePropertiesWidget : public QWidget

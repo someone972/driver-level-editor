@@ -136,7 +136,7 @@ void HeightmapTiles::cleanup()
     numTiles = 0;
 };
 
-int HeightmapTiles::load(IOHandle handle, IOCallbacks* callbacks,int size,DebugLogger* log)
+int HeightmapTiles::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
     cleanup();
     if(!handle || !callbacks)

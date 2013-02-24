@@ -141,5 +141,6 @@ void RandomModelPlacements::addPlacement(RandomModelPlacement placement)
         delete[] placements;
     }
     placements = temp;
+    placements[numPlacements] = placement;
     numPlacements++;
 };

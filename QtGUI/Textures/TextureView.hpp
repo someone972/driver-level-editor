@@ -1,7 +1,7 @@
 #ifndef TEXTURE_VIEW_HPP
 #define TEXTURE_VIEW_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 #include <QGLWidget>
 #include <vector>
 #include "../TextureList.hpp"

@@ -8,7 +8,8 @@ ModelNameList::ModelNameList(DriverLevel* lev,QObject* parent) : QAbstractTableM
 void ModelNameList::setLevel(DriverLevel* lev)
 {
     level = lev;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 int ModelNameList::rowCount(const QModelIndex &parent) const
@@ -125,7 +126,8 @@ bool ModelNameList::insertRows(int row, int count, const QModelIndex & parent)
 
 void ModelNameList::resetList()
 {
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 EventModelList::EventModelList(DriverLevel* lev,QObject* parent) : QAbstractTableModel(parent)
@@ -136,7 +138,8 @@ EventModelList::EventModelList(DriverLevel* lev,QObject* parent) : QAbstractTabl
 void EventModelList::setLevel(DriverLevel* lev)
 {
     level = lev;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 int EventModelList::rowCount(const QModelIndex &parent) const
@@ -209,7 +212,8 @@ void EventModelList::updateRow(int row)
 
 void EventModelList::resetList()
 {
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 ModelView::ModelView(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f) : QWidget(parent)

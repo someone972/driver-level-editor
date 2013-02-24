@@ -1,4 +1,5 @@
 QT += opengl
+QT += widgets
 CONFIG += windows
 CONFIG += qt
 CONFIG += moc
@@ -21,22 +22,14 @@ Debug:DEFINES += DEBUG_ENABLED
 TEMPLATE = app
 
 INCLUDEPATH += \
-	F:/QtSDK/Desktop/Qt/4.8.1/mingw/include \
-	F:/QtSDK/Desktop/Qt/4.8.1/mingw/include/QtGui \
     F:/CodeBlocks10/FreeImage/Dist
 
 Debug:LIBS += \
-	-L"F:/QtSDK/Desktop/Qt/4.8.1/mingw/lib" \
 	-L"F:/CodeBlocks10/FreeImage/Dist" \
-	-lQtCored4 \
-	-lQtGuid4 \
 	-lFreeImage
 
 Release:LIBS += \
-	-L"F:/QtSDK/Desktop/Qt/4.8.1/mingw/lib" \
 	-L"F:/CodeBlocks10/FreeImage/Dist" \
-    -lQtCore4 \
-    -lQtGui4 \
 	-lFreeImage
 
 QMAKE_CXXFLAGS += \

@@ -20,13 +20,15 @@ void TextureDefinitionList::setLevel(DriverLevel* lev)
     level = lev;
     if(level)
         level->registerEventHandler(this);
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void TextureDefinitionList::levelDestroyed()
 {
     level = NULL;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void TextureDefinitionList::getSettings(INI* settings)
@@ -72,7 +74,8 @@ bool TextureDefinitionList::removeRows(int row,int count,const QModelIndex& pare
 
 void TextureDefinitionList::resetList()
 {
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 QVariant TextureDefinitionList::data(const QModelIndex &index, int role) const

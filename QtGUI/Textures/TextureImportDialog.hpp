@@ -1,7 +1,7 @@
 #ifndef TEXTURE_IMPORT_DIALOG_HPP
 #define TEXTURE_IMPORT_DIALOG_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 #include <FreeImage.h>
 #include "../../Driver_Routines/driver_levels.hpp"
 #include "../../Driver_Routines/driver_d3d.hpp"

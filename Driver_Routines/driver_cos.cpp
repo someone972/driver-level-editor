@@ -493,7 +493,7 @@ unsigned int CosmeticsContainer::getRequiredSize()
 
 DriverCosmetics* CosmeticsContainer::getEntry(unsigned int idx)
 {
-    if(cosmetics && idx >= 0 && idx < numEntries)
+    if(cosmetics && idx < numEntries)
     return &cosmetics[idx];
     return NULL;
 };

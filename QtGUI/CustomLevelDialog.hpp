@@ -1,7 +1,7 @@
 #ifndef CUSTOM_LEVEL_DIALOG_HPP
 #define CUSTOM_LEVEL_DIALOG_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 
 class CustomLevelDialog : public QDialog
 {

@@ -1,7 +1,7 @@
 #ifndef SAVE_AS_DIALOG_HPP
 #define SAVE_AS_DIALOG_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 
 class LevelSaveOptions : public QDialog
 {

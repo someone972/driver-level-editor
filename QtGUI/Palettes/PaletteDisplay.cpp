@@ -26,14 +26,16 @@ int PaletteViewModel::columnCount(const QModelIndex &parent) const
 void PaletteViewModel::setNumColumns(int c)
 {
     numColumns = c;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::setGridSize(int pixels)
 {
     if(pixels > 0)
     gridSize = pixels;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 QVariant PaletteViewModel::data(const QModelIndex &index, int role) const
@@ -70,7 +72,8 @@ void PaletteViewModel::setPalette(const DriverPalette* pal)
 {
     if(pal)
     palette = *pal;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 int compareHue(const void* elem1, const void* elem2)
@@ -117,7 +120,8 @@ void PaletteViewModel::sortByHue()
     {
         remappedIndicies[i] = colorInfo[i].index;
     }
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::sortBySaturation()
@@ -137,7 +141,8 @@ void PaletteViewModel::sortBySaturation()
     {
         remappedIndicies[i] = colorInfo[i].index;
     }
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::sortByLightness()
@@ -157,7 +162,8 @@ void PaletteViewModel::sortByLightness()
     {
         remappedIndicies[i] = colorInfo[i].index;
     }
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::sortHueByLightness()
@@ -192,7 +198,8 @@ void PaletteViewModel::sortHueByLightness()
     {
         remappedIndicies[i] = colorInfo[i].index;
     }
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::sortHueBySaturation()
@@ -223,7 +230,8 @@ void PaletteViewModel::sortHueBySaturation()
     {
         remappedIndicies[i] = colorInfo[i].index;
     }
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::setRemappedIndex(int idx, int remapped)
@@ -239,14 +247,16 @@ void PaletteViewModel::setRemappedIndicies(int mapped[256])
 {
     for(int i = 0; i < 256; i++)
     remappedIndicies[i] = mapped[i]%256;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 void PaletteViewModel::setDefaultMapping()
 {
     for(int i = 0; i < 256; i++)
     remappedIndicies[i] = i;
-    reset();
+    beginResetModel();
+    endResetModel();
 };
 
 PaletteDisplay::PaletteDisplay(QWidget* parent) : QWidget(parent)

@@ -1,7 +1,7 @@
 #ifndef START_SCREEN_HPP
 #define START_SCREEN_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 
 class StartScreen : public QWidget
 {

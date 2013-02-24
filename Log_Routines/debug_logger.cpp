@@ -7,12 +7,12 @@ DebugLogger::DebugLogger()
     indentSize = 2;
 };
 
-void DebugLogger::Log(const char* base, ...)
+void DebugLogger::Log(const char* /*base*/, ...)
 {
 
 };
 
-void DebugLogger::Log(int level,const char* base,...)
+void DebugLogger::Log(int /*level*/,const char* /*base*/,...)
 {
 
 };

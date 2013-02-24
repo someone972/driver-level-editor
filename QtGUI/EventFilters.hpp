@@ -1,6 +1,6 @@
 #ifndef EVENT_FILTERS_HPP
 #define EVENT_FILTERS_HPP
-#include <QtGui>
+#include <QtWidgets>
 #include <iostream>
 
 using namespace std;

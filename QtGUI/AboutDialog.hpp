@@ -1,7 +1,7 @@
 #ifndef ABOUT_DIALOG_HPP
 #define ABOUT_DIALOG_HPP
 
-#include <QtGUI>
+#include <QtWidgets>
 
 class AboutDialog : public QDialog
 {
