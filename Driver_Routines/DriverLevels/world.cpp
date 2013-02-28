@@ -106,15 +106,41 @@ SectorTextureList* SectorTextureUsage::getTextureList(int sectorIdx)
     return NULL;
 };
 
-int SectorTextureUsage::load(IOHandle handle, IOCallbacks* callbacks,int size)
+int SectorTextureUsage::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
+    char buffer[1024];
+
     cleanup();
 
     if(!handle || !callbacks)
     return 1;
 
+    if(size < 1024*70)
+    {
+        log->Log("ERROR: Required size for sector texture usage exceeds block size!");
+        return 2;
+    }
+
+    log->increaseIndent();
     for(int i = 0; i < 1024; i++)
-    textureLists[i].load(handle,callbacks);
+    {
+        textureLists[i].load(handle,callbacks);
+
+        if(log->getLogPriority() >= DEBUG_LEVEL_RIDICULOUS)
+        {
+            memset(buffer, 0, 1024);
+            for(int j = 0; j < textureLists[i].getNumTexturesUsed(); j++)
+            {
+                sprintf(buffer+strlen(buffer), " %d", textureLists[i].getTexture(j));
+            }
+            log->Log(DEBUG_LEVEL_RIDICULOUS, "%d:%s", i, buffer);
+        }
+    }
+    log->decreaseIndent();
 
     return 0;
 };
@@ -191,34 +217,74 @@ void WorldSector::cleanup()
     contentsTableDataSize = 0;
 };
 
-int WorldSector::load(IOHandle handle, IOCallbacks* callbacks)
+int WorldSector::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
     if(!handle || !callbacks)
-    return 1;
+    return -1;
+
+    if(size < 12)
+    {
+        log->Log("ERROR: Size required for world sector header exceeds size of block.");
+        return -2;
+    }
+    size -= 12;
 
     callbacks->read(&numContentsEntries,4,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG, "numContentsEntries: %d", numContentsEntries);
+    if(size < numContentsEntries*4)
+    {
+        log->Log("ERROR: Size required for contentsEntries exceeds size of block.");
+        cleanup();
+        return -2;
+    }
+    size -= numContentsEntries*4;
     contentsEntries = new unsigned int[numContentsEntries];
     callbacks->read(contentsEntries,4,numContentsEntries,handle);
 
     callbacks->read(&contentsTableDataSize,4,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG, "contentsTableDataSize: %d",contentsTableDataSize);
+    if(size < contentsTableDataSize)
+    {
+        log->Log("ERROR: Size required for contentsTableData exceeds size of block.");
+        cleanup();
+        return -2;
+    }
+    size -= contentsTableDataSize;
     contentsTableData = new unsigned char[contentsTableDataSize];
     callbacks->read(contentsTableData,1,contentsTableDataSize,handle);
 
     callbacks->read(&numModelDefs,4,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG, "numModelDefs: %d", numModelDefs);
+    if(size < numModelDefs*20)
+    {
+        log->Log("ERROR: Size required for modelDefs exceeds size of block.");
+        cleanup();
+        return -2;
+    }
+    size -= numModelDefs*20;
     modelDefs = new WorldModelDef[numModelDefs];
 
+    log->increaseIndent();
     for(int i = 0; i < numModelDefs; i++)
     {
+        unsigned short temp;
         callbacks->read(&modelDefs[i].modelNum,2,1,handle);
-        callbacks->seek(handle,2,SEEK_CUR);//padding?
+        callbacks->read(&temp,2,1,handle);
         callbacks->read(&modelDefs[i].position.x,4,1,handle);
         callbacks->read(&modelDefs[i].position.y,4,1,handle);
         callbacks->read(&modelDefs[i].position.z,4,1,handle);
         callbacks->read(&modelDefs[i].rot,2,1,handle);
         callbacks->seek(handle,2,SEEK_CUR);//padding
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: modelNum: %hd padding?: %hu position: (%f, %f, %f) rotation: %hd",
+                 i, modelDefs[i].modelNum, temp, modelDefs[i].position.x, modelDefs[i].position.y, modelDefs[i].position.z, modelDefs[i].rot);
     }
-    return 0;
+    log->decreaseIndent();
+    return 12+4*numContentsEntries+contentsTableDataSize+numModelDefs*20;
 };
 
 unsigned int WorldSector::getRequiredSize()
@@ -303,11 +369,21 @@ void DriverWorld::cleanup()
     header.numSectors = 0;
 };
 
-int DriverWorld::load(IOHandle handle, IOCallbacks* callbacks,int size)
+int DriverWorld::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
     if(!handle || !callbacks)
     return 1;
+
+    if(size < 48)
+    {
+        log->Log("ERROR: Size required for world header exceeds size of block!");
+        return 2;
+    }
 
     callbacks->read(&header.mapWidth,4,1,handle);
     callbacks->read(&header.mapHeight,4,1,handle);
@@ -323,24 +399,63 @@ int DriverWorld::load(IOHandle handle, IOCallbacks* callbacks,int size)
 
     callbacks->read(&numBridgedDefs,4,1,handle);
 
+    log->Log(DEBUG_LEVEL_VERBOSE,"mapWidth: %d mapHeight: %d tileSize: %d numSectors: %d visTableWidth: %d unk1: %d unk2: %d ambientLight: %d sunDirection: (%f, %f, %f)",
+             header.mapWidth, header.mapHeight, header.tileSize, header.numSectors, header.visTableWidth, header.unk1, header.unk2, header.ambientLight,
+             header.sunDirection.x, header.sunDirection.y, header.sunDirection.z);
+
+    size -= 48;
+
+    if(size < numBridgedDefs*20 + 12*header.numSectors)
+    {
+        log->Log("ERROR: Required size for world exceeds size of block!");
+        cleanup();
+        return 2;
+    }
+
     sectors = new WorldSector[header.numSectors];
     bridgedDefs = new WorldModelDef[numBridgedDefs];
 
+    log->Log(DEBUG_LEVEL_VERBOSE,"Loading bridged definitions...");
+    log->increaseIndent();
     for(int i = 0; i < numBridgedDefs; i++)
     {
-        callbacks->seek(handle,2,SEEK_CUR);//messup?
+        unsigned short temp;
+        callbacks->read(&temp,2,1,handle);//messup?
         callbacks->read(&bridgedDefs[i].modelNum,2,1,handle);
         callbacks->read(&bridgedDefs[i].position.x,4,1,handle);
         callbacks->read(&bridgedDefs[i].position.y,4,1,handle);
         callbacks->read(&bridgedDefs[i].position.z,4,1,handle);
         callbacks->read(&bridgedDefs[i].rot,2,1,handle);
         callbacks->seek(handle,2,SEEK_CUR);//padding
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: messup?: %hu modelNum: %hd position: (%f, %f, %f) rotation: %hd",
+                 i, temp, bridgedDefs[i].modelNum, bridgedDefs[i].position.x, bridgedDefs[i].position.y, bridgedDefs[i].position.z, bridgedDefs[i].rot);
     }
+    log->decreaseIndent();
 
+    log->Log(DEBUG_LEVEL_VERBOSE,"Loading world sectors...");
+    log->increaseIndent();
     for(int i = 0; i < header.numSectors; i++)
     {
-        sectors[i].load(handle,callbacks);
+        log->Log(DEBUG_LEVEL_DEBUG, "Sector %d:",i);
+        log->increaseIndent();
+        int ret = sectors[i].load(handle, callbacks, size, log);
+        log->decreaseIndent();
+
+        size -= ret;
+        if(ret < 0)
+        {
+            log->Log("ERROR: Failed to load sector, aborting.");
+            cleanup();
+            return 2;
+        }
+        if(size < 0)
+        {
+            log->Log("ERROR: Size required for world sectors exceeds size of block!");
+            cleanup();
+            return 2;
+        }
     }
+    log->decreaseIndent();
     return 0;
 };
 

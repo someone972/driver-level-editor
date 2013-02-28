@@ -40,7 +40,7 @@ unsigned int DriverChairList::getRequiredSize()
 int DriverChairList::save(IOHandle handle, IOCallbacks* callbacks)
 {
     if(!handle)
-    return 1;
+    return -1;
 
     int temp = 0;
 
@@ -58,29 +58,45 @@ int DriverChairList::save(IOHandle handle, IOCallbacks* callbacks)
         callbacks->write(&chairs[i].rotation.z,2,1,handle);
         callbacks->write(&chairs[i].rotation.padding,2,1,handle);
     }
-    return 0;
+    return 12+numChairs*20;
 };
 
-int DriverChairList::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log)
+int DriverChairList::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
 
     if(!handle)
     {
-        if(log)
         log->Log("ERROR: File pointer is NULL!");
         return 1;
+    }
+
+    if(size < 12)
+    {
+        log->Log("ERROR: Size required to read chairs exceeds size of block!");
+        return 2;
     }
 
     callbacks->read(&visTileIndex,4,1,handle);
     callbacks->read(&numChairs,4,1,handle);
     callbacks->seek(handle,4,SEEK_CUR); //This is where a worthless memory location was stored from when it was originally written
 
-    if(log)
-    log->Log(DEBUG_LEVEL_DEBUG,"Vis tile index: %d; Number of chairs: %d");
+    log->Log(DEBUG_LEVEL_DEBUG, "visTileIndex: %d numChairs: %d", visTileIndex, numChairs);
+
+    if(size < 12+numChairs*20)
+    {
+        log->Log("ERROR: Size required to read chairs exceeds size of block!");
+        cleanup();
+        return 2;
+    }
 
     chairs = new DriverChair[numChairs];
 
+    log->increaseIndent();
     for(int i = 0; i < numChairs; i++)
     {
         callbacks->read(&chairs[i].x,4,1,handle);
@@ -90,10 +106,10 @@ int DriverChairList::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* l
         callbacks->read(&chairs[i].rotation.y,2,1,handle);
         callbacks->read(&chairs[i].rotation.z,2,1,handle);
         callbacks->read(&chairs[i].rotation.padding,2,1,handle);
-        if(log)
-        log->Log(DEBUG_LEVEL_RIDICULOUS,"%d: Position (%d,%d), inUse %d, Rotation (%d,%d,%d)",i,chairs[i].x,chairs[i].z,
-                 chairs[i].inUse,chairs[i].rotation.x,chairs[i].rotation.y,chairs[i].rotation.z);
+        log->Log(DEBUG_LEVEL_RIDICULOUS,"%d: Position (%d,%d), inUse %d, Rotation (%d,%d,%d)", i, chairs[i].x, chairs[i].z,
+                 chairs[i].inUse, chairs[i].rotation.x, chairs[i].rotation.y, chairs[i].rotation.z);
     }
+    log->decreaseIndent();
     return 0;
 };
 
@@ -126,8 +142,12 @@ void DriverChairs::cleanup()
     listLookupLength = 0;
 };
 
-int DriverChairs::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log)
+int DriverChairs::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
 
     if(!handle)
@@ -135,10 +155,15 @@ int DriverChairs::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log)
 
     unsigned long int start = callbacks->tell(handle);
 
+    if(size < 20)
+    {
+        log->Log("ERROR: Size required to read chair header exceeds size of block!");
+        return 2;
+    }
+
     callbacks->read(id,4,1,handle);
     if(strncmp(id,"GCHR",4) != 0)
     {
-        if(log)
         log->Log("ERROR: GCHR magic number not found in header.");
         callbacks->seek(handle,start,SEEK_SET);
         return 2;
@@ -148,12 +173,11 @@ int DriverChairs::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log)
     callbacks->read(&mapWidth,4,1,handle);
     callbacks->read(&mapHeight,4,1,handle);
     callbacks->read(&numChairLists,4,1,handle);
-    if(log)
-    {
-        log->Log(DEBUG_LEVEL_VERBOSE,"Version: %d",version);
-        log->Log(DEBUG_LEVEL_NORMAL,"Chair table is %d by %d cells.");
-        log->Log(DEBUG_LEVEL_NORMAL,"Loading %d chair lists.",numChairLists);
-    }
+    size -= 20;
+
+    log->Log(DEBUG_LEVEL_VERBOSE,"Version: %d", version);
+    log->Log(DEBUG_LEVEL_NORMAL,"Chair table is %d by %d cells.", mapWidth, mapHeight);
+    log->Log(DEBUG_LEVEL_NORMAL,"Loading %d chair lists.", numChairLists);
 
     listLookupLength = mapWidth*mapHeight;
     listLookup = new DriverChairList*[listLookupLength];
@@ -161,13 +185,37 @@ int DriverChairs::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log)
 
     lists = new DriverChairList[numChairLists];
 
+    log->increaseIndent();
     for(int i = 0; i < numChairLists; i++)
     {
-        lists[i].load(handle,callbacks);
-        if(lists[i].getVisibilityTileIndex() < listLookupLength)
-        listLookup[lists[i].getVisibilityTileIndex()] = &lists[i];
-    }
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "Chair list %d:", i);
+        log->increaseIndent();
+        int ret = lists[i].load(handle, callbacks, size, log);
+        log->decreaseIndent();
 
+        size -= ret;
+        if(ret < 0)
+        {
+            log->Log("ERROR: Failed to load chair list, aborting.");
+            cleanup();
+            return 2;
+        }
+        if(size < 0)
+        {
+            log->Log("ERROR: Size required for chairs exceeds size of block!");
+            cleanup();
+            return 2;
+        }
+        if(lists[i].getVisibilityTileIndex() < listLookupLength && lists[i].getVisibilityTileIndex() >= 0)
+        {
+            listLookup[lists[i].getVisibilityTileIndex()] = &lists[i];
+        }
+        else
+        {
+            log->Log(DEBUG_LEVEL_NORMAL, "WARNING: Chair list %d has out of bounds visibility index %d.", i, lists[i].getVisibilityTileIndex());
+        }
+    }
+    log->decreaseIndent();
     return 0;
 };
 

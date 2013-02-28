@@ -22,7 +22,7 @@ class HeightmapTile
         HeightmapTile();
         ~HeightmapTile();
         void cleanup();
-        int load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log = NULL);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

@@ -35,7 +35,7 @@ class SectorTextureUsage
         ~SectorTextureUsage();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -64,7 +64,7 @@ class WorldSector
         ~WorldSector();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -103,7 +103,7 @@ class DriverWorld
         ~DriverWorld();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -146,7 +146,7 @@ class LevelVisibility
         ~LevelVisibility();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size,DebugLogger* log = NULL);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

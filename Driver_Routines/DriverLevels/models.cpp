@@ -31,7 +31,7 @@ int ModelNames::getMaxNumNames()
     return maxNumNames;
 };
 
-int ModelNames::load(IOHandle handle, IOCallbacks* callbacks,int size)
+int ModelNames::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
     cleanup();
     if(!handle || !callbacks)
@@ -44,6 +44,18 @@ int ModelNames::load(IOHandle handle, IOCallbacks* callbacks,int size)
     callbacks->read(data,1,size,handle);
 
     rebuildNameIndex();
+    if(log)
+    {
+        if(log->getLogPriority() >= DEBUG_LEVEL_RIDICULOUS)
+        {
+            log->increaseIndent();
+            for(int i = 0; i < maxNumNames; i++)
+            {
+                log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: %s", i, getName(i));
+            }
+            log->decreaseIndent();
+        }
+    }
     return 0;
 };
 
@@ -364,17 +376,21 @@ void DriverModel::cleanup()
     centerDirty = true;
 };
 
+//Converts the 56 possible face types into the 16 actual data representations. This is how it is done in the Driver exe.
 const int faceTypeConversion[56] = { 0, 1, 2, 3, 4, 5, 6, 7,16,16,16,16,16,16,16,16,
                                      8, 9,10,11,12,13,14,15,16,16,16,16,16,16,16,16,
                                      0, 1, 2, 3, 4, 5, 6, 7,16,16,16,16,16,16,16,16,
                                      8, 9,10,11,12,13,14,15};
 
+//Size of the data for each face type.
 const int faceTypeSize[56] = {12,16,20,28,20,24,28,36, 0, 0, 0, 0, 0, 0, 0, 0,
                               16,16,20,24,20,24,24,32, 0, 0, 0, 0, 0, 0, 0, 0,
                               12,16,20,28,20,24,28,36, 0, 0, 0, 0, 0, 0, 0, 0,
                               16,16,20,24,20,24,24,32};
 
-int DriverModel::convertFromLevelFormat(unsigned char* data,int size, DebugLogger* log)
+//Converts a model from the level file format into a more manageable format.
+//Returns size of model data read on success or -1 if data read will exceed size argument.
+int DriverModel::convertFromLevelFormat(unsigned char* data, int size, DebugLogger* log)
 {
     DebugLogger dummy;
     if(log == NULL)
@@ -385,6 +401,11 @@ int DriverModel::convertFromLevelFormat(unsigned char* data,int size, DebugLogge
     centerDirty = true;
 
     int totalSize = 56;
+    if(size < totalSize)
+    {
+        log->Log("ERROR: Data to be read for model exceeds size arg.");
+        return -1;
+    }
 
     flags1 = *(int*)(data);
     modelRef = *(int*)(data+4);
@@ -408,10 +429,18 @@ int DriverModel::convertFromLevelFormat(unsigned char* data,int size, DebugLogge
         collisionData = (unsigned char*)(*(int*)(data+52)+(long int)(data));
         numCollisionBounds = *(int*)(collisionData);
         collisionData += 4;
+        totalSize += 4;
     }
 
     log->Log(DEBUG_LEVEL_DEBUG, "Flags1: 0x%x  Flags2: 0x%x  ModelRef: %d  SphereRadius: %f  CircleRadius: %f",flags1,flags2,modelRef,boundingSphereRadius,boundingCircleRadius);
     log->Log(DEBUG_LEVEL_DEBUG, "Vertices: %d  Faces: %d  Normals: %d  TexturesUsed: %d  CollisionBounds: %d",numVertices,numFaces,numNormals,numTexturesUsed,numCollisionBounds);
+
+    if(size < totalSize + numTexturesUsed + numNormals*12 + numFaces*12 + (modelRef == -1 ? numCollisionBounds*20 + numFaces*16 + numVertices*12 : 0)) //numFaces*12 - 12 is the smallest size for a face, not perfect but it should catch most corrupted data.
+    {
+        cleanup();
+        log->Log("ERROR: Data to be read for model exceeds size arg.");
+        return -1;
+    }
 
     if(numTexturesUsed > 0)
     {
@@ -755,6 +784,10 @@ int DriverModel::convertFromLevelFormat(unsigned char* data,int size, DebugLogge
         }
         log->decreaseIndent();
     }
+
+    if(totalSize%4)
+    totalSize += 4-totalSize%4;
+
     return totalSize;
 };
 
@@ -1404,7 +1437,7 @@ DriverModel* ModelContainer::getReferencedModel(DriverModel* in)
     return mr;
 };
 
-int ModelContainer::load(IOHandle handle, IOCallbacks* callbacks,int size, DebugLogger* log)
+int ModelContainer::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
     DebugLogger dummy;
     if(log == NULL)
@@ -1415,7 +1448,9 @@ int ModelContainer::load(IOHandle handle, IOCallbacks* callbacks,int size, Debug
     return 1;
 
     callbacks->read(&numModels,4,1,handle);
+    size -= 4;
     log->Log(DEBUG_LEVEL_NORMAL, "Loading %d models...", numModels);
+
     models = new DriverModel*[numModels];
     for(int i = 0; i < numModels; i++)
     {
@@ -1440,8 +1475,19 @@ int ModelContainer::load(IOHandle handle, IOCallbacks* callbacks,int size, Debug
         }
         callbacks->read(tempData,1,modelSize,handle);
         log->increaseIndent();
-        models[i]->convertFromLevelFormat(tempData,modelSize,log);
+        int actualSize = models[i]->convertFromLevelFormat(tempData,modelSize,log);
         log->decreaseIndent();
+        if(actualSize < 0)
+        {
+            log->Log("ERROR: Model size exceeded size of data.");
+            delete[] tempData;
+            cleanup();
+            return 2;
+        }
+        else if(actualSize != modelSize)
+        {
+            log->Log(DEBUG_LEVEL_NORMAL,"WARNING: Actual size of model data (%d) does not match expected size (%d).",actualSize,modelSize);
+        }
     }
     delete[] tempData;
     return 0;

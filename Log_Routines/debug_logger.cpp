@@ -4,7 +4,7 @@ DebugLogger::DebugLogger()
 {
     priority = DEFAULT_PRIORITY;
     indent = 0;
-    indentSize = 2;
+    indentSize = 4;
 };
 
 void DebugLogger::Log(const char* /*base*/, ...)

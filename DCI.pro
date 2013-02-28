@@ -34,7 +34,7 @@ Release:LIBS += \
 
 QMAKE_CXXFLAGS += \
 	-O2 \
-	 \
+    \
 	-Wall
 
 PRECOMPILED_HEADER =

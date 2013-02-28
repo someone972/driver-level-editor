@@ -5,6 +5,7 @@
 #include <cstring>
 #include "../ioFuncs.hpp"
 #include "../../vector.hpp"
+#include "../../Log_Routines/debug_logger.hpp"
 
 const int LAMP_NORMAL = 0;
 const int LAMP_FLICKER = 1;
@@ -28,7 +29,7 @@ class DriverLampList
         DriverLampList();
         ~DriverLampList();
         void cleanup();
-        int load(IOHandle handle, IOCallbacks* callbacks);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -48,7 +49,7 @@ class DriverLamps
         ~DriverLamps();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

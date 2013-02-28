@@ -6,6 +6,7 @@
 #include <cstdio>
 #include "../ioFuncs.hpp"
 #include "../../EventMgr.hpp"
+#include "../../Log_Routines/debug_logger.hpp"
 
 using namespace std;
 
@@ -59,7 +60,7 @@ class TextureDefinitions
         void unregisterEventHandler(IDriverTexDefEvents* handler);
 
         void cleanup();
-        int load(IOHandle handle, IOCallbacks* callbacks, int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -172,7 +173,7 @@ class DriverTextures
         void registerEventHandler(IDriverTextureEvents* handler);
         void unregisterEventHandler(IDriverTextureEvents* handler);
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

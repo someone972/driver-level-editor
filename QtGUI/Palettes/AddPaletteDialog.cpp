@@ -130,12 +130,12 @@ void AddPaletteDialog::paletteChanged(int idx)
     }
 };
 
-void AddPaletteDialog::paletteRemoved(int idx)
+void AddPaletteDialog::paletteRemoved(int /*idx*/)
 {
     refreshList();
 };
 
-void AddPaletteDialog::paletteInserted(int idx)
+void AddPaletteDialog::paletteInserted(int /*idx*/)
 {
     refreshList();
 };

@@ -30,15 +30,28 @@ int RandomModelPlacements::getNumPlacements()
     return numPlacements;
 };
 
-int RandomModelPlacements::load(IOHandle handle, IOCallbacks* callbacks,int size)
+int RandomModelPlacements::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
     if(!handle || !callbacks)
     return 1;
 
+    if(size%44 != 0)
+    {
+        log->Log("ERROR: Block size is not multiple of model placement size.");
+        return 2;
+    }
+
     numPlacements = size/44;
+    log->Log(DEBUG_LEVEL_DEBUG, "Loading %d random placements.", numPlacements);
+
     placements = new RandomModelPlacement[numPlacements];
 
+    log->increaseIndent();
     for(int i = 0; i < numPlacements; i++)
     {
         callbacks->read(&placements[i].position.x,4,1,handle);
@@ -61,7 +74,13 @@ int RandomModelPlacements::load(IOHandle handle, IOCallbacks* callbacks,int size
 
         callbacks->read(&placements[i].modelNumber,2,1,handle);
         callbacks->read(&placements[i].unk,2,1,handle);
+
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: position: (%f, %f, %f) rotation: (%hd, %hd, %hd) position2: (%f, %f, %f) rotation2: (%hd, %hd, %hd) modelNumber: %hd unk: %hd",
+                 i, placements[i].position.x, placements[i].position.y, placements[i].position.z, placements[i].rotation.x, placements[i].rotation.y, placements[i].rotation.z,
+                 placements[i].position2.x, placements[i].position2.y, placements[i].position2.z, placements[i].rotation2.x, placements[i].rotation2.y, placements[i].rotation2.z,
+                 placements[i].modelNumber, placements[i].unk);
     }
+    log->decreaseIndent();
     return 0;
 };
 

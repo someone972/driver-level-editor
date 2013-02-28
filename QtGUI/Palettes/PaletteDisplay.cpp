@@ -13,12 +13,12 @@ PaletteViewModel::PaletteViewModel(QWidget* parent) : QAbstractTableModel(parent
     setDefaultMapping();
 };
 
-int PaletteViewModel::rowCount(const QModelIndex &parent) const
+int PaletteViewModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return 256/numColumns;
 };
 
-int PaletteViewModel::columnCount(const QModelIndex &parent) const
+int PaletteViewModel::columnCount(const QModelIndex &/*parent*/) const
 {
     return numColumns;
 };
@@ -55,7 +55,7 @@ QVariant PaletteViewModel::data(const QModelIndex &index, int role) const
     return QVariant();
 };
 
-QVariant PaletteViewModel::headerData(int section, Qt::Orientation orientation,int role) const
+QVariant PaletteViewModel::headerData(int /*section*/, Qt::Orientation /*orientation*/, int /*role*/) const
 {
     return QVariant();
 };

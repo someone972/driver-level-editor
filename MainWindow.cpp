@@ -821,26 +821,27 @@ void MainWindow::savePlayerDenting(QString filename)
 
 void MainWindow::saveCivilianDenting(QString filename)
 {
-
+    //TODO: Implement civilian denting saving
 };
 
 void MainWindow::savePlayerCosmetics(QString filename)
 {
-
+    //TODO: Implement player cosmetics saving
 };
 
 void MainWindow::saveCivilianCosmetics(QString filename)
 {
-
+    //TODO: Implement civilian cosmetics saving
 };
 
 void MainWindow::saveWheelDefinitions(QString filename)
 {
-
+    //TODO: Implement wheel definition saving
 };
 
 void MainWindow::handleTextureChange(int tex)
 {
+    //FIXME: Deprecated. Remove.
     levelHasChanged = true;
     setWindowModified(true);
     levelTextures.rebuildTexture(tex);
@@ -849,6 +850,7 @@ void MainWindow::handleTextureChange(int tex)
 
 void MainWindow::handlePaletteChange(int pal)
 {
+    //FIXME: Deprecated. Remove.
     levelHasChanged = true;
     setWindowModified(true);
     for(int i = 0; i < d3d.getNumEntries(); i++)
@@ -869,6 +871,7 @@ void MainWindow::handlePaletteChange(int pal)
 
 void MainWindow::handleD3dChange()
 {
+    //FIXME: Deprecated. Remove.
     d3dHasChanged = true;
     setWindowModified(true);
     levelTextures.rebuildAllTextures();
@@ -878,6 +881,7 @@ void MainWindow::handleD3dChange()
 
 void MainWindow::handleD3dEntryChange(int tex, int pal)
 {
+    //FIXME: Deprecated. Remove.
     d3dHasChanged = true;
     setWindowModified(true);
     levelTextures.rebuildTexture(tex);

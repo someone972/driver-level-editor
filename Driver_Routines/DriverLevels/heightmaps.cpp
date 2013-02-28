@@ -42,15 +42,22 @@ void HeightmapTile::setModelIndex(int index)
     modelIdx = index;
 };
 
-int HeightmapTile::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log)
+int HeightmapTile::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+        log = &dummy;
+
     cleanup();
     if(!handle || !callbacks)
     {
         if(log)
-        log->Log("ERROR: File pointer is NULL!");
-        return 1;
+        log->Log("ERROR: I/O handle is invalid!");
+        return -1;
     };
+
+    if(size < 8)
+        return -2;
 
     callbacks->read(&modelIdx,2,1,handle);
     callbacks->read(&unk1,2,1,handle);
@@ -59,6 +66,9 @@ int HeightmapTile::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log
 
     if(log)
     log->Log(DEBUG_LEVEL_DEBUG,"Model index: %d, Unk1: %d, Unk2: %d, Number of faces: %d",modelIdx,unk1,unk2,numFaces);
+
+    if(size < 8+numFaces*0x34)
+        return -2;
 
     faces = new HeightmapTileFace[numFaces];
     for(int i = 0; i < numFaces; i++)
@@ -80,7 +90,7 @@ int HeightmapTile::load(IOHandle handle, IOCallbacks* callbacks,DebugLogger* log
         log->Log(DEBUG_LEVEL_RIDICULOUS,"V1: (%d,%d), V2: (%d,%d), V3: (%d,%d), V4: (%d,%d), Normal: (%f,%f,%f,%f), Num Verts: %d", faces[i].v1.x,faces[i].v1.y,faces[i].v2.x,
                  faces[i].v2.y,faces[i].v3.x,faces[i].v3.y,faces[i].v4.x,faces[i].v4.y,faces[i].normal.x,faces[i].normal.y,faces[i].normal.z,faces[i].normal.w,faces[i].numVerts);
     }
-    return 0;
+    return 8+numFaces*0x34;
 };
 
 unsigned int HeightmapTile::getRequiredSize()
@@ -91,7 +101,7 @@ unsigned int HeightmapTile::getRequiredSize()
 int HeightmapTile::save(IOHandle handle, IOCallbacks* callbacks)
 {
     if(!handle || !callbacks)
-    return 1;
+    return -1;
 
     callbacks->write(&modelIdx,2,1,handle);
     callbacks->write(&unk1,2,1,handle);
@@ -114,7 +124,7 @@ int HeightmapTile::save(IOHandle handle, IOCallbacks* callbacks)
         callbacks->write(&faces[i].normal.w,4,1,handle);
         callbacks->write(&faces[i].numVerts,4,1,handle);
     }
-    return 0;
+    return getRequiredSize();
 };
 
 HeightmapTiles::HeightmapTiles()
@@ -142,19 +152,37 @@ int HeightmapTiles::load(IOHandle handle, IOCallbacks* callbacks, int size, Debu
     if(!handle || !callbacks)
     {
         if(log)
-        log->Log("ERROR: File pointer is NULL!");
+        log->Log("ERROR: Invalid I/O handle!");
         return 1;
     }
 
     callbacks->read(&numTiles,4,1,handle);
     if(log)
     log->Log(DEBUG_LEVEL_NORMAL,"Loading %d tiles.",numTiles);
+
+    size -= 4;
+    if(size < (int)numTiles*(int)sizeof(HeightmapTile))
+    {
+        cleanup();
+        log->Log("ERROR: Size mismatch (data corrupt).");
+        return 2;
+    }
+
     tiles = new HeightmapTile[numTiles];
 
+    log->increaseIndent();
     for(int i = 0; i < numTiles; i++)
     {
-        tiles[i].load(handle,callbacks,log);
+        int tileSize = tiles[i].load(handle,callbacks,size,log);
+        size -= tileSize;
+        if(tileSize < 0)
+        {
+            cleanup();
+            log->Log("ERROR: Size mismatch (data corrupt).");
+            return 2;
+        }
     }
+    log->decreaseIndent();
     return 0;
 };
 

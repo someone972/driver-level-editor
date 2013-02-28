@@ -128,16 +128,30 @@ void TextureDefinitions::cleanup()
     eventManager.Raise(EVENT(IDriverTexDefEvents::definitionsReset)(false));
 };
 
-int TextureDefinitions::load(IOHandle handle, IOCallbacks* callbacks,int size)
+int TextureDefinitions::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
 
     if(!handle || !callbacks)
     return 1;
 
     callbacks->read(&numTextureDefinitions,4,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG, "Loading %d texture definitions.", numTextureDefinitions);
+
+    if(size < 4+numTextureDefinitions*16)
+    {
+        numTextureDefinitions = 0;
+        log->Log("ERROR: Required size for texture definitions exceeds block size!");
+        return 2;
+    }
+
     definitions = new TextureDefinition[numTextureDefinitions];
 
+    log->increaseIndent();
     for(int i = 0; i < numTextureDefinitions; i++)
     {
         char tempname[9];
@@ -151,7 +165,10 @@ int TextureDefinitions::load(IOHandle handle, IOCallbacks* callbacks,int size)
         callbacks->read(&definitions[i].w,1,1,handle);
         callbacks->read(&definitions[i].h,1,1,handle);
         callbacks->seek(handle,3,SEEK_CUR); //dword align
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: texture: %hhu x: %hhu y: %hhu w: %hhu h: %hhu name: %s",
+                 i, definitions[i].texture, definitions[i].x, definitions[i].y, definitions[i].w, definitions[i].h, definitions[i].getName());
     }
+    log->decreaseIndent();
 
     //Raise definitions opened event.
     eventManager.Raise(EVENT(IDriverTexDefEvents::definitionsOpened)());
@@ -407,7 +424,7 @@ int DriverTexture::load(IOHandle handle, IOCallbacks* callbacks)
 {
     cleanup();
     if(!handle || !callbacks)
-    return 1;
+    return -1;
 
     callbacks->read(&flags,2,1,handle);
     callbacks->read(&carnum,2,1,handle);
@@ -421,7 +438,7 @@ int DriverTexture::load(IOHandle handle, IOCallbacks* callbacks)
         data = new unsigned char[256*256*2];
         callbacks->read(data,1,2*256*256,handle);
     }
-    return 0;
+    return getRequiredSize();
 };
 
 void DriverTexture::setTruecolor(bool isTruecolor)
@@ -666,18 +683,33 @@ void DriverTextures::cleanup()
     eventManager.Raise(EVENT(IDriverTextureEvents::texturesReset)(false));
 };
 
-int DriverTextures::load(IOHandle handle, IOCallbacks* callbacks,int size)
+int DriverTextures::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
 
     if(!handle || !callbacks)
     return 1;
 
     callbacks->read(&numPalettes,2,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG, "Loading %hd palettes.", numPalettes);
+
+    if(size < 2+numPalettes*1026)
+    {
+        numPalettes = 0;
+        log->Log("ERROR: Required size for textures/palettes exceeds block size.");
+        return 2;
+    }
+    size -= 2+numPalettes*1026;
+
     palettes = new DriverPalette*[numPalettes];
 
     int greatestSlot = 0;
 
+    log->increaseIndent();
     for(int i = 0; i < numPalettes; i++)
     {
         palettes[i] = new DriverPalette();
@@ -687,6 +719,8 @@ int DriverTextures::load(IOHandle handle, IOCallbacks* callbacks,int size)
         if(palettes[i]->paletteNumber > greatestSlot)
         greatestSlot = palettes[i]->paletteNumber;
 
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: slot: %hd", i, palettes[i]->paletteNumber);
+
         for(int j = 0; j < 256; j++)
         {
             callbacks->read(&palettes[i]->colors[j].b,1,1,handle);
@@ -695,6 +729,7 @@ int DriverTextures::load(IOHandle handle, IOCallbacks* callbacks,int size)
             callbacks->read(&palettes[i]->colors[j].a,1,1,handle);
         }
     }
+    log->decreaseIndent();
 
     paletteIndexSize = greatestSlot+1;
     paletteIndex = new int[paletteIndexSize];
@@ -706,16 +741,29 @@ int DriverTextures::load(IOHandle handle, IOCallbacks* callbacks,int size)
     }
 
     callbacks->read(&numTextures,4,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG, "Loading %d textures.", numTextures);
+
     textures = new DriverTexture*[numTextures];
     for(int i = 0; i < numTextures; i++)
     {
         textures[i] = new DriverTexture();
     }
 
+    log->increaseIndent();
     for(int i = 0; i < numTextures; i++)
     {
-        textures[i]->load(handle,callbacks);
+        size -= textures[i]->load(handle,callbacks);
+
+        if(size < 0)
+        {
+            cleanup();
+            log->decreaseIndent();
+            log->Log("ERROR: Required size for textures/palettes exceeds block size.");
+            return 2;
+        }
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: flags: %hx carNumber: %hd", i, textures[i]->getFlags(), textures[i]->getCarNumber());
     }
+    log->decreaseIndent();
 
     //Raise textures opened event.
     eventManager.Raise(EVENT(IDriverTextureEvents::texturesOpened)());

@@ -6,6 +6,7 @@
 #include <cstring>
 #include "../../vector.hpp"
 #include "../ioFuncs.hpp"
+#include "../../Log_Routines/debug_logger.hpp"
 
 class RoadTable
 {
@@ -31,7 +32,7 @@ class RoadTables
         ~RoadTables();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -70,7 +71,7 @@ class RoadConnections
         ~RoadConnections();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -98,7 +99,7 @@ class RoadSections
         ~RoadSections();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -139,7 +140,7 @@ class Intersections
         ~Intersections();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
@@ -156,7 +157,7 @@ class IntersectionPositions
         IntersectionPositions();
         ~IntersectionPositions();
         void cleanup();
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

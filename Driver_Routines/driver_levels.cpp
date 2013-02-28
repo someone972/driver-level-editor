@@ -5,7 +5,7 @@ DriverLevel::DriverLevel()
     openBlocks = 0;
 
     for(unsigned int i = 0; i < NUMBER_OF_BLOCKS; i++)
-        priorities[i] = DEFAULT_PRIORITY;
+        priorities[i] = DEBUG_LEVEL_NORMAL;
 
     log = &dummy;
 };
@@ -166,15 +166,19 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
             }
         }
 
+        int ret = 0;
+
         switch(blockNum)
         {
             case BLOCK_TEXTURES:
                 if(openWhat & LEV_TEXTURES)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading textures...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_TEXTURES]);
-                    textures.load(handle, callbacks,blockSize);
+                    ret = textures.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading textures.");
                     openBlocks |= LEV_TEXTURES;
                 }
@@ -186,7 +190,7 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading models...");
                     log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_MODELS]);
-                    models.load(handle, callbacks,blockSize, log);
+                    ret = models.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
                     log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading models.");
@@ -198,9 +202,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_WORLD)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading world...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_WORLD]);
-                    world.load(handle, callbacks,blockSize);
+                    ret = world.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading world.");
                     openBlocks |= LEV_WORLD;
                 }
@@ -210,9 +216,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_RANDOM_MODEL_PLACEMENT)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading random model placement...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_RANDOM_MODEL_PLACEMENT]);
-                    randomPlacements.load(handle, callbacks,blockSize);
+                    ret = randomPlacements.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading random model placement.");
                     openBlocks |= LEV_RANDOM_MODEL_PLACEMENT;
                 }
@@ -222,9 +230,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_TEXTURE_DEFINITIONS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading texture definitions...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_TEXTURE_DEFINITIONS]);
-                    textureDefinitions.load(handle, callbacks,blockSize);
+                    ret = textureDefinitions.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading texture definitions.");
                     openBlocks |= LEV_TEXTURE_DEFINITIONS;
                 }
@@ -234,9 +244,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_ROAD_TABLE)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading road table...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_ROAD_TABLE]);
-                    roadTables.load(handle, callbacks,blockSize);
+                    ret = roadTables.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading road table.");
                     openBlocks |= LEV_ROAD_TABLE;
                 }
@@ -246,9 +258,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_ROAD_CONNECTIONS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading road connections...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_ROAD_CONNECTIONS]);
-                    roadConnections.load(handle, callbacks,blockSize);
+                    ret = roadConnections.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading road connections.");
                     openBlocks |= LEV_ROAD_CONNECTIONS;
                 }
@@ -258,9 +272,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_INTERSECTIONS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading intersections...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_INTERSECTIONS]);
-                    intersections.load(handle, callbacks,blockSize);
+                    ret = intersections.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading intersections.");
                     openBlocks |= LEV_INTERSECTIONS;
                 }
@@ -270,9 +286,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_HEIGHTMAP_TILES)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading heightmap tiles...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_HEIGHTMAP_TILES]);
-                    heightmapTiles.load(handle, callbacks,blockSize,log);
+                    ret = heightmapTiles.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading heightmap tiles.");
                     openBlocks |= LEV_HEIGHTMAP_TILES;
                 }
@@ -282,9 +300,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_HEIGHTMAP)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading heightmaps...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_HEIGHTMAP]);
-                    heightmaps.load(handle, callbacks,blockSize,log);
+                    ret = heightmaps.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading heightmaps.");
                     openBlocks |= LEV_HEIGHTMAP;
                 }
@@ -294,9 +314,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_MODEL_NAMES)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading model names...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_MODEL_NAMES]);
-                    modelNames.load(handle, callbacks,blockSize);
+                    ret = modelNames.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading model names.");
                     openBlocks |= LEV_MODEL_NAMES;
                 }
@@ -306,9 +328,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_EVENT_MODELS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading event models...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_EVENT_MODELS]);
-                    eventModels.load(handle, callbacks,blockSize);
+                    ret = eventModels.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading event models.");
                     openBlocks |= LEV_EVENT_MODELS;
                 }
@@ -318,9 +342,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_VISIBILITY)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading visibility...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_VISIBILITY]);
-                    visibility.load(handle, callbacks,blockSize,log);
+                    ret = visibility.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading visibility.");
                     openBlocks |= LEV_VISIBILITY;
                 }
@@ -330,9 +356,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_SECTOR_TEXTURE_USAGE)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading sector texture usage...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_SECTOR_TEXTURE_USAGE]);
-                    sectorTextures.load(handle, callbacks,blockSize);
+                    ret = sectorTextures.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading sector texture usage.");
                     openBlocks |= LEV_SECTOR_TEXTURE_USAGE;
                 }
@@ -342,9 +370,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_ROAD_SECTIONS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading road sections...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_ROAD_SECTIONS]);
-                    roadSections.load(handle, callbacks,blockSize);
+                    ret = roadSections.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading road sections.");
                     openBlocks |= LEV_ROAD_SECTIONS;
                 }
@@ -354,9 +384,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_INTERSECTION_POSITIONS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading intersection positions...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_INTERSECTION_POSITIONS]);
-                    intersectionPositions.load(handle, callbacks,blockSize);
+                    ret = intersectionPositions.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading intersection positions.");
                     openBlocks |= LEV_INTERSECTION_POSITIONS;
                 }
@@ -366,9 +398,11 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_LAMPS)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading lamps...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_LAMPS]);
-                    lamps.load(handle, callbacks);
+                    ret = lamps.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading lamps.");
                     openBlocks |= LEV_LAMPS;
                 }
@@ -378,20 +412,28 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
                 if(openWhat & LEV_CHAIR_PLACEMENT)
                 {
                     log->Log(DEBUG_LEVEL_NORMAL,"Loading chair placement...");
+                    log->increaseIndent();
                     log->setLogPriority(priorities[BLOCK_CHAIR_PLACEMENT]);
-                    chairs.load(handle, callbacks,log);
+                    ret = chairs.load(handle, callbacks, blockSize, log);
                     log->setLogPriority(oldPriority);
+                    log->decreaseIndent();
                     log->Log(DEBUG_LEVEL_NORMAL,"Finished loading chair placement.");
                     openBlocks |= LEV_CHAIR_PLACEMENT;
                 }
                 else callbacks->seek(handle,blockSize,SEEK_CUR);
                 break;
             default:
-                log->Log(DEBUG_LEVEL_NORMAL,"Unknown/Unused block type encountered. Skipped.");
+                log->Log(DEBUG_LEVEL_NORMAL,"Unknown/Unused block type %d of size %d encountered. Skipped.", blockNum, blockSize);
                 callbacks->seek(handle,blockSize,SEEK_CUR);
                 break;
         }
         dataRead += 8+blockSize;
+        if(ret != 0)
+        {
+            log->Log("Block load failed. Aborting level loading!");
+            cleanup();
+            return 1;
+        }
     }
     log->Log(DEBUG_LEVEL_NORMAL,"Level finished loading successfully!");
 

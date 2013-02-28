@@ -2,7 +2,7 @@
 
 ModelNameList::ModelNameList(DriverLevel* lev,QObject* parent) : QAbstractTableModel(parent)
 {
-    level = NULL;
+    level = lev;
 };
 
 void ModelNameList::setLevel(DriverLevel* lev)
@@ -12,14 +12,14 @@ void ModelNameList::setLevel(DriverLevel* lev)
     endResetModel();
 };
 
-int ModelNameList::rowCount(const QModelIndex &parent) const
+int ModelNameList::rowCount(const QModelIndex &/*parent*/) const
 {
     if(!level)
     return 0;
     else return level->models.getNumModels();
 };
 
-int ModelNameList::columnCount(const QModelIndex &parent) const
+int ModelNameList::columnCount(const QModelIndex &/*parent*/) const
 {
     return 2;
 };
@@ -132,7 +132,9 @@ void ModelNameList::resetList()
 
 EventModelList::EventModelList(DriverLevel* lev,QObject* parent) : QAbstractTableModel(parent)
 {
-    level = NULL;
+    level = lev;
+    beginResetModel();
+    endResetModel();
 };
 
 void EventModelList::setLevel(DriverLevel* lev)
@@ -142,14 +144,14 @@ void EventModelList::setLevel(DriverLevel* lev)
     endResetModel();
 };
 
-int EventModelList::rowCount(const QModelIndex &parent) const
+int EventModelList::rowCount(const QModelIndex &/*parent*/) const
 {
     if(!level)
     return 0;
     else return level->eventModels.getNumModels();
 };
 
-int EventModelList::columnCount(const QModelIndex &parent) const
+int EventModelList::columnCount(const QModelIndex &/*parent*/) const
 {
     return 1;
 };

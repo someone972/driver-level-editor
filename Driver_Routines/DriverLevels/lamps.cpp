@@ -29,19 +29,35 @@ void DriverLampList::cleanup()
     delete[] lamps;
     lamps = NULL;
     numLamps = 0;
+    visTileIndex = -1;
 };
 
-int DriverLampList::load(IOHandle handle, IOCallbacks* callbacks)
+int DriverLampList::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
 
     if(!handle || !callbacks)
-    return 1;
+    return -1;
 
     callbacks->read(&visTileIndex,4,1,handle);
     callbacks->read(&numLamps,4,1,handle);
+    log->Log(DEBUG_LEVEL_DEBUG,"visTileIndex: %d numLamps: %d",visTileIndex,numLamps);
+
+    if(size < numLamps*40+8)
+    {
+        numLamps = 0;
+        visTileIndex = -1;
+        log->Log("ERROR: Size required to load lamps exceeds block size!");
+        return -2;
+    }
+
     lamps = new DriverLamp[numLamps];
 
+    log->increaseIndent();
     for(int i = 0; i < numLamps; i++)
     {
         callbacks->read(&lamps[i].type,4,1,handle);
@@ -54,8 +70,12 @@ int DriverLampList::load(IOHandle handle, IOCallbacks* callbacks)
         callbacks->read(&lamps[i].g,4,1,handle);
         callbacks->read(&lamps[i].b,4,1,handle);
         callbacks->read(&lamps[i].unk2,4,1,handle);
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "%d: type: %d radius: %f position: (%f, %f, %f) unk1: %f r: %d g: %d b: %d unk2: %d",
+                 i, lamps[i].type, lamps[i].radius, lamps[i].position.x, lamps[i].position.y, lamps[i].position.z, lamps[i].unk1,
+                 lamps[i].r, lamps[i].g, lamps[i].b, lamps[i].unk2);
     }
-    return 0;
+    log->decreaseIndent();
+    return 8+numLamps*40;
 };
 
 int DriverLampList::getVisibilityTileIndex()
@@ -121,8 +141,12 @@ void DriverLamps::cleanup()
     listLookupLength = 0;
 };
 
-int DriverLamps::load(IOHandle handle, IOCallbacks* callbacks)
+int DriverLamps::load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log)
 {
+    DebugLogger dummy;
+    if(log == NULL)
+    log = &dummy;
+
     cleanup();
 
     if(!handle || !callbacks)
@@ -130,9 +154,16 @@ int DriverLamps::load(IOHandle handle, IOCallbacks* callbacks)
 
     unsigned long int start = callbacks->tell(handle);
 
+    if(size < 20)
+    {
+        log->Log("ERROR: Size required to read lamp block header exceeds size of block!");
+        return 2;
+    }
+
     callbacks->read(id,4,1,handle);
     if(strncmp(id,"GLMP",4) != 0)
     {
+        log->Log("ERROR: Lamp block does not start with GMLP magic number!");
         callbacks->seek(handle,start,SEEK_SET);
         return 2;
     }
@@ -141,6 +172,8 @@ int DriverLamps::load(IOHandle handle, IOCallbacks* callbacks)
     callbacks->read(&mapWidth,4,1,handle);
     callbacks->read(&mapHeight,4,1,handle);
     callbacks->read(&numLampLists,4,1,handle);
+    size -= 20;
+    log->Log(DEBUG_LEVEL_DEBUG, "version: %f mapWidth: %d mapHeight: %d numLampLists: %d", version, mapWidth, mapHeight, numLampLists);
 
     listLookupLength = mapWidth*mapHeight;
     listLookup = new DriverLampList*[listLookupLength];
@@ -148,13 +181,37 @@ int DriverLamps::load(IOHandle handle, IOCallbacks* callbacks)
 
     lists = new DriverLampList[numLampLists];
 
+    log->increaseIndent();
     for(int i = 0; i < numLampLists; i++)
     {
-        lists[i].load(handle,callbacks);
-        if(lists[i].getVisibilityTileIndex() < listLookupLength)
-        listLookup[lists[i].getVisibilityTileIndex()] = &lists[i];
-    }
+        log->Log(DEBUG_LEVEL_RIDICULOUS, "Lamp list %d:", i);
+        log->increaseIndent();
+        int ret = lists[i].load(handle, callbacks, size, log);
+        log->decreaseIndent();
 
+        size -= ret;
+        if(ret < 0)
+        {
+            log->Log("ERROR: Failed to load lamp list, aborting.");
+            cleanup();
+            return 2;
+        }
+        if(size < 0)
+        {
+            log->Log("ERROR: Size required for lamps exceeds size of block!");
+            cleanup();
+            return 2;
+        }
+        if(lists[i].getVisibilityTileIndex() < listLookupLength && lists[i].getVisibilityTileIndex() >= 0)
+        {
+            listLookup[lists[i].getVisibilityTileIndex()] = &lists[i];
+        }
+        else
+        {
+            log->Log(DEBUG_LEVEL_NORMAL, "WARNING: Lamp list %d contains out of bounds visibility index %d.", i, lists[i].getVisibilityTileIndex());
+        }
+    }
+    log->decreaseIndent();
     return 0;
 };
 

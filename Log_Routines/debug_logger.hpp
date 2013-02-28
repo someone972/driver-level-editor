@@ -3,7 +3,7 @@
 #include <cstdarg>
 #include <cstdio>
 
-const int DEFAULT_PRIORITY = 1;
+const int DEFAULT_PRIORITY = 2;
 const int DEBUG_LEVEL_NONE = -1;
 const int DEBUG_LEVEL_MINIMAL = 0;
 const int DEBUG_LEVEL_IMPORTANT_ONLY = 1;

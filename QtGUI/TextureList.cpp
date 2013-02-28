@@ -389,7 +389,7 @@ void LevelTextures::D3DOpened()
     rebuildAllTextures();
 };
 
-void LevelTextures::entryRemoved(int idx, int old)
+void LevelTextures::entryRemoved(int /*idx*/, int old)
 {
     rebuildTexture(old);
 };
@@ -400,19 +400,19 @@ void LevelTextures::entryInserted(int idx)
     rebuildTexture(entry->getTexture());
 };
 
-void LevelTextures::entryIndexChanged(int entryIdx, int idx)
+void LevelTextures::entryIndexChanged(int entryIdx, int /*idx*/)
 {
     D3DEntry* entry = d3d->getEntry(entryIdx);
     rebuildTexture(entry->getTexture());
 };
 
-void LevelTextures::entryIndexInserted(int entryIdx, int idx)
+void LevelTextures::entryIndexInserted(int entryIdx, int /*idx*/)
 {
     D3DEntry* entry = d3d->getEntry(entryIdx);
     rebuildTexture(entry->getTexture());
 };
 
-void LevelTextures::entryIndexRemoved(int entryIdx, int idx)
+void LevelTextures::entryIndexRemoved(int entryIdx, int /*idx*/)
 {
     D3DEntry* entry = d3d->getEntry(entryIdx);
     rebuildTexture(entry->getTexture());

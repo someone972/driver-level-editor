@@ -5,6 +5,7 @@
 #include <cstring>
 #include "../ioFuncs.hpp"
 #include "../../vector.hpp"
+#include "../../Log_Routines/debug_logger.hpp"
 
 //Important note: Random model placements aren't used anywhere in the current executable, but are still included in the level.
 //  Perhaps they were used to create data included in the executable?
@@ -28,7 +29,7 @@ class RandomModelPlacements
         ~RandomModelPlacements();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

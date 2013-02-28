@@ -188,8 +188,8 @@ void TextureViewGL::drawHighlight(int x, int y, unsigned char r, unsigned char g
 
         glColor3ub(red,green,blue);
         glBegin(GL_LINE_LOOP);
-        glVertex2f(0.5+(float)(x-i), (float)(height()-(y+textureSize+i)));
-        glVertex2f((float)(x+textureSize+i), (float)(height()-(y+textureSize+i)));
+        glVertex2f(0.5+(float)(x-i), 0.5+(float)(height()-(y+textureSize+i)));
+        glVertex2f((float)(x+textureSize+i), 0.5+(float)(height()-(y+textureSize+i)));
         glVertex2f((float)(x+textureSize+i), -0.5+(float)(height()-(y-i)));
         glVertex2f(0.5+(float)(x-i), -0.5+(float)(height()-(y-i)));
         glEnd();
@@ -853,7 +853,7 @@ void TextureView::setup()
     connect(glView, SIGNAL(sizeHasChanged()), this, SLOT(ensureSelectionVisible()));
 };
 
-void TextureView::scrollContentsBy(int dx, int dy)
+void TextureView::scrollContentsBy(int /*dx*/, int /*dy*/)
 {
     updateViewerPosition();
 };

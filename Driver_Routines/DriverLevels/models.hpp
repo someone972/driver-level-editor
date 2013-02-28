@@ -31,7 +31,7 @@ class ModelNames
         ~ModelNames();
         void cleanup();
 
-        int load(IOHandle handle, IOCallbacks* callbacks,int size);
+        int load(IOHandle handle, IOCallbacks* callbacks, int size, DebugLogger* log = NULL);
 
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);

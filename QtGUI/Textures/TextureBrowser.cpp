@@ -1072,7 +1072,7 @@ void TextureBrowser::moveTexture(int from, int to)
     }
 };
 
-void TextureBrowser::textureRemoved(int idx)
+void TextureBrowser::textureRemoved(int /*idx*/)
 {
     refreshIndexList();
     rebuildPaletteList();
@@ -1100,12 +1100,12 @@ void TextureBrowser::textureChanged(int idx)
     checkForPairs();
 };
 
-void TextureBrowser::textureMoved(int from, int to)
+void TextureBrowser::textureMoved(int /*from*/, int /*to*/)
 {
     checkForPairs();
 };
 
-void TextureBrowser::textureInserted(int idx)
+void TextureBrowser::textureInserted(int /*idx*/)
 {
     //TODO: implement me
     refreshIndexList();

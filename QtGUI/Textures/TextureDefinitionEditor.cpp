@@ -40,14 +40,14 @@ void TextureDefinitionList::getSettings(INI* settings)
     }
 };
 
-int TextureDefinitionList::rowCount(const QModelIndex &parent) const
+int TextureDefinitionList::rowCount(const QModelIndex &/*parent*/) const
 {
     if(!level)
     return 0;
     else return level->textureDefinitions.getNumTextureDefinitions();
 };
 
-int TextureDefinitionList::columnCount(const QModelIndex &parent) const
+int TextureDefinitionList::columnCount(const QModelIndex &/*parent*/) const
 {
     return 6;
 };
@@ -150,7 +150,7 @@ bool TextureDefinitionList::insertRow(int row, const QModelIndex & parent)
     return insertRows(row,1,parent);
 };
 
-bool TextureDefinitionList::insertRows(int row, int count, const QModelIndex & parent)
+bool TextureDefinitionList::insertRows(int row, int count, const QModelIndex & /*parent*/)
 {
     if(level && count > 0)
     {
