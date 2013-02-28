@@ -32,10 +32,10 @@ MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
 
 #ifdef DEBUG_ENABLED
     mainLog.Log("Executable is a debug build.");
-    setWindowTitle(QApplication::translate("windowtitle", "Driver Car Importer [DEBUG][*]"));
+    setWindowTitle(QApplication::translate("windowtitle", "Driver Level Editor [DEBUG][*]"));
 #else
     mainLog.Log("Executable is a release build.");
-    setWindowTitle(QApplication::translate("windowtitle", "Driver Car Importer[*]"));
+    setWindowTitle(QApplication::translate("windowtitle", "Driver Level Editor[*]"));
 #endif
 
 #ifdef FREEIMAGE_LIB
