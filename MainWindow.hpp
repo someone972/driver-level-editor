@@ -95,6 +95,7 @@ class MainWindow : public QMainWindow
         LevelTextures levelTextures;
         CosmeticsContainer playerCosmetics;
         CosmeticsContainer civilianCosmetics;
+        DriverDenting denting;
         DriverD3D d3d;
         DriverWheelDefinitions wheels;
 

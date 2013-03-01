@@ -305,11 +305,29 @@ void MainWindow::viewTextureBrowser()
 
 void MainWindow::cleanupLevelData()
 {
+    mainLog.Log("Cleaning up level data...");
     level.cleanup();
+    mainLog.Log("Level data cleaned up successfully.");
+
+    mainLog.Log("Cleaning up D3D data...");
     d3d.cleanup();
-//    playerCosmetics.reset();
-//    civilianCosmetics.reset();
+    mainLog.Log("D3D data cleaned up successfully.");
+
+    mainLog.Log("Cleaning up player cosmetics data...");
+    playerCosmetics.reset();
+    mainLog.Log("Player cosmetics data cleaned up successfully.");
+
+    mainLog.Log("Cleaning up civilian cosmetics data...");
+    civilianCosmetics.reset();
+    mainLog.Log("Civilian cosmetics data cleaned up successfully.");
+
+    mainLog.Log("Cleaning up denting data...");
+    denting.cleanup();
+    mainLog.Log("Denting data cleaned up successfully.");
+
+    mainLog.Log("Cleaning up wheel definition data...");
     wheels.reset();
+    mainLog.Log("Wheel definition data cleaned up successfully.");
 };
 
 void MainWindow::setConvenienceActionsEnabled(bool enabled)
@@ -327,6 +345,8 @@ void MainWindow::setConvenienceActionsEnabled(bool enabled)
 
 void MainWindow::openLevel(QString levFile,QString d3dFile,QString pcarDenFile,QString civcarDenFile,QString pcarCosFile,QString civcarCosFile,QString wheelFile)
 {
+    int ret;
+
     cleanupLevelData();
 
     levelString = levFile;
@@ -340,48 +360,190 @@ void MainWindow::openLevel(QString levFile,QString d3dFile,QString pcarDenFile,Q
     QMessageBox msgBox(centralWindow);
     msgBox.setIcon(QMessageBox::Warning);
 
-    int ret = level.loadFromFile(levFile.toLocal8Bit().data(),LEV_ALL);
-    emit levelChanged();
-    if(ret != 0)
+    if(!levelString.isEmpty())
     {
-        if(ret == 1)
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load level %s.",levelString.toLocal8Bit().data());
+        ret = level.loadFromFile(levelString.toLocal8Bit().data(),LEV_ALL);
+        if(ret != 0)
         {
-            msgBox.setText(tr("Failed to open level file!"));
-        }
-        else if(ret == 2)
-        {
-            level.cleanup();
-            msgBox.setText(tr("Level is corrupt! Could not load!"));
-        }
-        else
-        {
-            msgBox.setText(tr("Unknown error occured when loading level!"));
-        }
+            if(ret == 1)
+            {
+                msgBox.setText(tr("Failed to open level file!"));
+                mainLog.Log("ERROR: Failed to open player cosmetics file!");
+            }
+            else if(ret == 2)
+            {
+                level.cleanup();
+                msgBox.setText(tr("Level is corrupt! Could not load!"));
+                mainLog.Log("ERROR: Failed to open player cosmetics file!");
+            }
+            else
+            {
+                msgBox.setText(tr("Unknown error occurred when loading level!"));
+                mainLog.Log("ERROR: Unknown error occurred when loading player cosmetics: %d", ret);
+            }
 
-        msgBox.exec();
-        return;
+            msgBox.exec();
+            return;
+        }
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Level loaded successfully.");
     }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Level filename is empty, nothing to be done.");
 
-    ret = d3d.loadFromFile(d3dFile.toLocal8Bit().data());
-    if(ret < 0)
+    if(!d3dString.isEmpty())
     {
-        if(ret == -1)
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load D3D %s.",d3dString.toLocal8Bit().data());
+        ret = d3d.loadFromFile(d3dString.toLocal8Bit().data());
+        if(ret < 0)
         {
-            msgBox.setText(tr("Failed to open d3d file!"));
-        }
-        else if(ret == -2)
-        {
-            level.cleanup();
-            msgBox.setText(tr("D3D is corrupt! Could not load!"));
-        }
-        else
-        {
-            msgBox.setText(tr("Unknown error occured when loading d3d!"));
-        }
+            if(ret == -1)
+            {
+                msgBox.setText(tr("Failed to open D3D file!"));
+                mainLog.Log("ERROR: Failed to open D3D file!");
+            }
+            else if(ret == -2)
+            {
+                level.cleanup();
+                msgBox.setText(tr("D3D is corrupt! Could not load!"));
+                mainLog.Log("ERROR: D3D is corrupt!");
+            }
+            else
+            {
+                msgBox.setText(tr("Unknown error occurred when loading D3D!"));
+                mainLog.Log("ERROR: Unknown error occurred when loading D3D: %d", ret);
+            }
 
-        msgBox.exec();
-        return;
+            msgBox.exec();
+            return;
+        }
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "D3D loaded successfully.");
     }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "D3D filename is empty, nothing to be done.");
+
+    if(!playerDenString.isEmpty())
+    {
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load player denting %s.",playerDenString.toLocal8Bit().data());
+        ret = denting.loadPlayerDentingFromFile(playerDenString.toLocal8Bit().data());
+        if(ret != 0)
+        {
+            if(ret == 1)
+            {
+                msgBox.setText(tr("Failed to open player denting file!"));
+                mainLog.Log("ERROR: Failed to open player denting file!");
+            }
+            else
+            {
+                msgBox.setText(tr("Unknown error occurred when loading player denting!"));
+                mainLog.Log("ERROR: Unknown error occurred when loading player denting: %d", ret);
+            }
+
+            msgBox.exec();
+            return;
+        }
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Player denting loaded successfully.");
+    }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Player denting filename is empty, nothing to be done.");
+
+    if(!civilianDenString.isEmpty())
+    {
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load civilian denting %s.",civilianDenString.toLocal8Bit().data());
+        ret = denting.loadCivilianDentingFromFile(civilianDenString.toLocal8Bit().data());
+        if(ret != 0)
+        {
+            if(ret == 1)
+            {
+                msgBox.setText(tr("Failed to open civilian denting file!"));
+                mainLog.Log("ERROR: Failed to open civilian denting file!");
+            }
+            else
+            {
+                msgBox.setText(tr("Unknown error occurred when loading civilian denting!"));
+                mainLog.Log("ERROR: Unknown error occurred when loading civilian denting: %d", ret);
+            }
+
+            msgBox.exec();
+            return;
+        }
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian denting loaded successfully.");
+    }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian denting filename is empty, nothing to be done.");
+
+    if(!playerCosString.isEmpty())
+    {
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load player cosmetics %s.",playerCosString.toLocal8Bit().data());
+        ret = playerCosmetics.loadCosmeticsFromFile(playerCosString.toLocal8Bit().data());
+        if(ret < 0)
+        {
+            if(ret == -1)
+            {
+                msgBox.setText(tr("Failed to open player cosmetics file!"));
+                mainLog.Log("ERROR: Failed to open player cosmetics file!");
+            }
+            else
+            {
+                msgBox.setText(tr("Unknown error occurred when loading player cosmetics!"));
+                mainLog.Log("ERROR: Unknown error occurred when loading player cosmetics: %d", ret);
+            }
+
+            msgBox.exec();
+            return;
+        }
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Player cosmetics loaded successfully.");
+    }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Player cosmetics filename is empty, nothing to be done.");
+
+    if(!civilianCosString.isEmpty())
+    {
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load civilian cosmetics %s.",civilianCosString.toLocal8Bit().data());
+        ret = civilianCosmetics.loadCosmeticsFromFile(civilianCosString.toLocal8Bit().data());
+        if(ret < 0)
+        {
+            if(ret == -1)
+            {
+                msgBox.setText(tr("Failed to open civilian cosmetics file!"));
+                mainLog.Log("ERROR: Failed to open civilian cosmetics file!");
+            }
+            else
+            {
+                msgBox.setText(tr("Unknown error occurred when loading civilian cosmetics!"));
+                mainLog.Log("ERROR: Unknown error occurred when loading civilian cosmetics: %d", ret);
+            }
+
+            msgBox.exec();
+            return;
+        }
+        mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian cosmetics loaded successfully.");
+    }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian cosmetics filename is empty, nothing to be done.");
+
+    if(!wheelsString.isEmpty())
+    {
+        if(QFile::exists(wheelsString))
+        {
+            mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load wheel definition file %s.",civilianCosString.toLocal8Bit().data());
+            ret = wheels.loadFromFile(wheelsString.toLocal8Bit().data());
+            if(ret != 0)
+            {
+                if(ret == 1)
+                {
+                    msgBox.setText(tr("Failed to open wheel definition file!"));
+                    mainLog.Log("ERROR: Failed to open wheel definition file!");
+                }
+                else
+                {
+                    msgBox.setText(tr("Unknown error occurred when loading wheel definition file!"));
+                    mainLog.Log("ERROR: Unknown error occurred when loading wheel definition file: %d", ret);
+                }
+
+                msgBox.exec();
+                return;
+            }
+            mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition file loaded successfully.");
+        }
+        else mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition file does not exist, skipping.");
+    }
+    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition filename is empty, nothing to be done.");
+
     levelTextures.rebuildAllTextures();
     saveDialog->setLevelFilename(levelString);
     saveDialog->setD3DFilename(d3dString);
@@ -769,22 +931,21 @@ void MainWindow::savePlayerDenting(QString filename)
 {
     mainLog.Log("Saving player denting as %s...",filename.toLocal8Bit().data());
 
-    //prepare message box for denting saving failures
     QMessageBox msgBox(centralWindow);
-    msgBox.setText(tr("Playercar denting saving failed!"));
+    msgBox.setText(tr("Player denting saving failed!"));
     msgBox.setIcon(QMessageBox::Warning);
     bool success;
 
     FILE* file = fopen("temp\\player.den","wb");
     if(!file)
     {
-        msgBox.setInformativeText(tr("Unable to create temporary file for denting saving!"));
+        msgBox.setInformativeText(tr("Unable to create temporary file for player denting saving!"));
         msgBox.exec();
-        mainLog.Log("ERROR: Unable to create temporary file for denting saving.");
+        mainLog.Log("ERROR: Unable to create temporary file for player denting saving.");
         return;
     }
-    //TODO: insert function for saving denting
-    int ret = 0;//playerDenting.saveToFile(file);
+
+    int ret = denting.savePlayerDentingToFile(file);
     fclose(file);
 
     if(ret != 0)
@@ -806,16 +967,16 @@ void MainWindow::savePlayerDenting(QString filename)
         {
             msgBox.setInformativeText(tr("Failed to remove old file. (Do you need admin rights?)"));
             msgBox.exec();
-            mainLog.Log("ERROR: Failed to remove old denting file.");
+            mainLog.Log("ERROR: Failed to remove old player denting file.");
             return;
         }
     }
-    success = QFile::rename("temp\\temp.d3d",filename);
+    success = QFile::rename("temp\\player.den",filename);
     if(!success)
     {
         msgBox.setInformativeText(tr("Failed to rename and move temp file."));
         msgBox.exec();
-        mainLog.Log("ERROR: Failed to rename/move temp denting file.");
+        mainLog.Log("ERROR: Failed to rename/move temp player denting file.");
         return;
     }
     mainLog.Log("Finished saving player denting successfully.");
@@ -823,20 +984,220 @@ void MainWindow::savePlayerDenting(QString filename)
 
 void MainWindow::saveCivilianDenting(QString filename)
 {
-    //TODO: Implement civilian denting saving
+    mainLog.Log("Saving civilian denting as %s...",filename.toLocal8Bit().data());
+
+    QMessageBox msgBox(centralWindow);
+    msgBox.setText(tr("Civilian denting saving failed!"));
+    msgBox.setIcon(QMessageBox::Warning);
+    bool success;
+
+    FILE* file = fopen("temp\\civilian.den","wb");
+    if(!file)
+    {
+        msgBox.setInformativeText(tr("Unable to create temporary file for civilian denting saving!"));
+        msgBox.exec();
+        mainLog.Log("ERROR: Unable to create temporary file for civilian denting saving.");
+        return;
+    }
+
+    int ret = denting.saveCivilianDentingToFile(file);
+    fclose(file);
+
+    if(ret != 0)
+    {
+        switch(ret)
+        {
+            default:
+                msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
+                break;
+        }
+        msgBox.exec();
+        mainLog.Log("ERROR: Civilian denting saving returned failure code %d.",ret);
+        return;
+    }
+    if(QFile::exists(filename))
+    {
+        success = QFile::remove(filename);
+        if(!success)
+        {
+            msgBox.setInformativeText(tr("Failed to remove old file. (Do you need admin rights?)"));
+            msgBox.exec();
+            mainLog.Log("ERROR: Failed to remove old civilian denting file.");
+            return;
+        }
+    }
+    success = QFile::rename("temp\\civilian.den",filename);
+    if(!success)
+    {
+        msgBox.setInformativeText(tr("Failed to rename and move temp file."));
+        msgBox.exec();
+        mainLog.Log("ERROR: Failed to rename/move temp civilian denting file.");
+        return;
+    }
+    mainLog.Log("Finished saving civilian denting successfully.");
 };
 
 void MainWindow::savePlayerCosmetics(QString filename)
 {
-    //TODO: Implement player cosmetics saving
+    mainLog.Log("Saving player cosmetics as %s...", filename.toLocal8Bit().data());
+
+    QMessageBox msgBox(centralWindow);
+    msgBox.setText(tr("Player cosmetics saving failed!"));
+    msgBox.setIcon(QMessageBox::Warning);
+    bool success;
+
+    FILE* file = fopen("temp\\player.cos","wb");
+    if(!file)
+    {
+        msgBox.setInformativeText(tr("Unable to create temporary file for player cosmetics saving!"));
+        msgBox.exec();
+        mainLog.Log("ERROR: Unable to create temporary file for player cosmetics saving.");
+        return;
+    }
+
+    int ret = playerCosmetics.saveCosmeticsToFile(file);
+    fclose(file);
+
+    if(ret != 0)
+    {
+        switch(ret)
+        {
+            default:
+                msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
+                break;
+        }
+        msgBox.exec();
+        mainLog.Log("ERROR: Player cosmetics saving returned failure code %d.",ret);
+        return;
+    }
+    if(QFile::exists(filename))
+    {
+        success = QFile::remove(filename);
+        if(!success)
+        {
+            msgBox.setInformativeText(tr("Failed to remove old file. (Do you need admin rights?)"));
+            msgBox.exec();
+            mainLog.Log("ERROR: Failed to remove old player cosmetics file.");
+            return;
+        }
+    }
+    success = QFile::rename("temp\\player.cos",filename);
+    if(!success)
+    {
+        msgBox.setInformativeText(tr("Failed to rename and move temp file."));
+        msgBox.exec();
+        mainLog.Log("ERROR: Failed to rename/move temp player cosmetics file.");
+        return;
+    }
+    mainLog.Log("Finished saving player cosmetics successfully.");
 };
 
 void MainWindow::saveCivilianCosmetics(QString filename)
 {
-    //TODO: Implement civilian cosmetics saving
+    mainLog.Log("Saving civilian cosmetics as %s...", filename.toLocal8Bit().data());
+
+    QMessageBox msgBox(centralWindow);
+    msgBox.setText(tr("Civilian cosmetics saving failed!"));
+    msgBox.setIcon(QMessageBox::Warning);
+    bool success;
+
+    FILE* file = fopen("temp\\civilian.cos","wb");
+    if(!file)
+    {
+        msgBox.setInformativeText(tr("Unable to create temporary file for civilian cosmetics saving!"));
+        msgBox.exec();
+        mainLog.Log("ERROR: Unable to create temporary file for civilian cosmetics saving.");
+        return;
+    }
+
+    int ret = civilianCosmetics.saveCosmeticsToFile(file);
+    fclose(file);
+
+    if(ret != 0)
+    {
+        switch(ret)
+        {
+            default:
+                msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
+                break;
+        }
+        msgBox.exec();
+        mainLog.Log("ERROR: Civilian cosmetics saving returned failure code %d.",ret);
+        return;
+    }
+    if(QFile::exists(filename))
+    {
+        success = QFile::remove(filename);
+        if(!success)
+        {
+            msgBox.setInformativeText(tr("Failed to remove old file. (Do you need admin rights?)"));
+            msgBox.exec();
+            mainLog.Log("ERROR: Failed to remove old civilian cosmetics file.");
+            return;
+        }
+    }
+    success = QFile::rename("temp\\civilian.cos",filename);
+    if(!success)
+    {
+        msgBox.setInformativeText(tr("Failed to rename and move temp file."));
+        msgBox.exec();
+        mainLog.Log("ERROR: Failed to rename/move temp civilian cosmetics file.");
+        return;
+    }
+    mainLog.Log("Finished saving civilian cosmetics successfully.");
 };
 
 void MainWindow::saveWheelDefinitions(QString filename)
 {
-    //TODO: Implement wheel definition saving
+    mainLog.Log("Saving wheel definition file as %s...", filename.toLocal8Bit().data());
+
+    QMessageBox msgBox(centralWindow);
+    msgBox.setText(tr("Wheel definition file saving failed!"));
+    msgBox.setIcon(QMessageBox::Warning);
+    bool success;
+
+    FILE* file = fopen("temp\\wheels.wdf","wb");
+    if(!file)
+    {
+        msgBox.setInformativeText(tr("Unable to create temporary file for wheel definition file saving!"));
+        msgBox.exec();
+        mainLog.Log("ERROR: Unable to create temporary file for wheel definition file saving.");
+        return;
+    }
+
+    int ret = wheels.saveToFile(file);
+    fclose(file);
+
+    if(ret != 0)
+    {
+        switch(ret)
+        {
+            default:
+                msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
+                break;
+        }
+        msgBox.exec();
+        mainLog.Log("ERROR: Wheel definition file saving returned failure code %d.",ret);
+        return;
+    }
+    if(QFile::exists(filename))
+    {
+        success = QFile::remove(filename);
+        if(!success)
+        {
+            msgBox.setInformativeText(tr("Failed to remove old file. (Do you need admin rights?)"));
+            msgBox.exec();
+            mainLog.Log("ERROR: Failed to remove old wheel definition file file.");
+            return;
+        }
+    }
+    success = QFile::rename("temp\\wheels.wdf",filename);
+    if(!success)
+    {
+        msgBox.setInformativeText(tr("Failed to rename and move temp file."));
+        msgBox.exec();
+        mainLog.Log("ERROR: Failed to rename/move temp wheel definition file.");
+        return;
+    }
+    mainLog.Log("Finished saving wheel definition file successfully.");
 };

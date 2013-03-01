@@ -60,6 +60,7 @@ class DriverDenting
     public:
         DriverDenting();
         ~DriverDenting();
+        void cleanup();
 
         int loadCivilianDentingFromFile(const char* filename);
         int loadCivilianDentingFromFile(FILE* file);

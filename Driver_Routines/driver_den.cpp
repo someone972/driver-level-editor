@@ -251,6 +251,14 @@ DriverDenting::~DriverDenting()
 
 };
 
+void DriverDenting::cleanup()
+{
+    for(int i = 0; i < 11; i++)
+        civilianEntries[i].cleanup();
+    for(int i = 0; i < 18; i++)
+        playerEntries[i].cleanup();
+};
+
 DentingEntry* DriverDenting::civilianDenting(int idx)
 {
     if(idx >= 0 && idx < 11)

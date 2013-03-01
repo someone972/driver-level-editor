@@ -2,9 +2,14 @@
 
 DriverCosmetics::DriverCosmetics()
 {
+    setDefaults();
+};
+
+void DriverCosmetics::setDefaults()
+{
     speedModifier = 7000;
     lightStyle = 0;
-    //TODO: add default values here?
+    //TODO: Set default cosmetics values.
 };
 
 int DriverCosmetics::loadFromFile(const char* filename)
@@ -104,22 +109,24 @@ int DriverCosmetics::load(IOHandle handle, IOCallbacks* callbacks)
     return getRequiredSize();
 };
 
-int DriverCosmetics::writeToFile(const char* filename)
+int DriverCosmetics::saveToFile(const char* filename)
 {
     FILE* file = fopen(filename, "wb");
     if(!file)
     return -1;
-    return writeToFile(file);
+    return saveToFile(file);
 };
 
-int DriverCosmetics::writeToFile(FILE* file)
+int DriverCosmetics::saveToFile(FILE* file)
 {
-    return write((IOHandle)file, &fileCallbacks);
+    return save((IOHandle)file, &fileCallbacks);
 };
 
-int DriverCosmetics::write(IOHandle handle, IOCallbacks* callbacks)
+int DriverCosmetics::save(IOHandle handle, IOCallbacks* callbacks)
 {
-    if(!handle || !callbacks->write)
+    if(!handle || !callbacks)
+    return -1;
+    if(!callbacks->write)
     return -1;
 
     for(int i = 0; i < 2; i++)
@@ -416,7 +423,7 @@ void DriverCosmetics::setBoundingBoxSize(Vector3s size)
 CosmeticsContainer::CosmeticsContainer(unsigned int size)
 {
     numEntries = size;
-    cosmetics = 0;
+    cosmetics = NULL;
     if(numEntries != 0)
     cosmetics = new DriverCosmetics[numEntries];
 };
@@ -425,6 +432,20 @@ CosmeticsContainer::~CosmeticsContainer()
 {
     if(cosmetics)
     delete[] cosmetics;
+};
+
+void CosmeticsContainer::reset()
+{
+    if(cosmetics && numEntries != 0)
+    {
+        for(int i = 0; i < numEntries; i++)
+            cosmetics[i].setDefaults();
+    }
+};
+
+unsigned int CosmeticsContainer::getNumEntries()
+{
+    return numEntries;
 };
 
 int CosmeticsContainer::loadCosmeticsFromFile(const char* filename)
@@ -454,20 +475,20 @@ int CosmeticsContainer::loadCosmetics(IOHandle handle, IOCallbacks* callbacks)
     return totalRead;
 };
 
-int CosmeticsContainer::writeCosmeticsToFile(const char* filename)
+int CosmeticsContainer::saveCosmeticsToFile(const char* filename)
 {
     FILE* file = fopen(filename, "wb");
     if(!file)
     return -1;
-    return writeCosmeticsToFile(file);
+    return saveCosmeticsToFile(file);
 };
 
-int CosmeticsContainer::writeCosmeticsToFile(FILE* file)
+int CosmeticsContainer::saveCosmeticsToFile(FILE* file)
 {
-    return writeCosmetics((IOHandle)file, &fileCallbacks);
+    return saveCosmetics((IOHandle)file, &fileCallbacks);
 };
 
-int CosmeticsContainer::writeCosmetics(IOHandle handle, IOCallbacks* callbacks)
+int CosmeticsContainer::saveCosmetics(IOHandle handle, IOCallbacks* callbacks)
 {
     if(!handle)
     return -1;
@@ -476,7 +497,7 @@ int CosmeticsContainer::writeCosmetics(IOHandle handle, IOCallbacks* callbacks)
 
     for(unsigned int i = 0; i < numEntries; i++)
     {
-        totalWritten = cosmetics[i].write(handle,callbacks);
+        totalWritten = cosmetics[i].save(handle,callbacks);
     }
     return totalWritten;
 };

@@ -16,11 +16,12 @@ class DriverCosmetics
         int loadFromFile(const char* filename);
         int load(IOHandle handle, IOCallbacks* callbacks);
 
-        int writeToFile(FILE* file);
-        int writeToFile(const char* filename);
-        int write(IOHandle handle, IOCallbacks* callbacks);
+        int saveToFile(FILE* file);
+        int saveToFile(const char* filename);
+        int save(IOHandle handle, IOCallbacks* callbacks);
 
         unsigned int getRequiredSize();
+        void setDefaults();
 
         Vector4f getHeadlightPosition(LeftOrRight leftOrRight);
         Vector4f getSignalLightPosition(LeftOrRight leftOrRight,FrontOrBack frontOrBack);
@@ -83,17 +84,20 @@ class CosmeticsContainer
     public:
         CosmeticsContainer(unsigned int size);
         ~CosmeticsContainer();
+        void reset();
+
         int loadCosmeticsFromFile(FILE* file);
         int loadCosmeticsFromFile(const char* filename);
         int loadCosmetics(IOHandle handle, IOCallbacks* callbacks);
 
-        int writeCosmeticsToFile(FILE* file);
-        int writeCosmeticsToFile(const char* filename);
-        int writeCosmetics(IOHandle handle, IOCallbacks* callbacks);
+        int saveCosmeticsToFile(FILE* file);
+        int saveCosmeticsToFile(const char* filename);
+        int saveCosmetics(IOHandle handle, IOCallbacks* callbacks);
 
         unsigned int getRequiredSize();
         DriverCosmetics* getEntry(unsigned int idx);
         DriverCosmetics& operator[](unsigned int index);
+        unsigned int getNumEntries();
 
     protected:
         unsigned int numEntries;
