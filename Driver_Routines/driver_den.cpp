@@ -280,21 +280,29 @@ int DriverDenting::loadCivilianDentingFromFile(FILE* file)
     if(!file)
     return 1;
 
+    return loadCivilianDenting(&fileCallbacks,(IOHandle)file);
+};
+
+int DriverDenting::loadCivilianDenting(IOCallbacks* callbacks, IOHandle handle)
+{
+    if(!callbacks || !handle)
+    return 1;
+
     int version;
     int dentingSize,shininessSize,textureIndexSize;
     unsigned int offsets[12];
 
-    fread(&version,4,1,file);
+    callbacks->read(&version,4,1,handle);
     if(version != 2)
     return 2;
 
-    fread(&dentingSize,4,1,file);
-    fread(&shininessSize,4,1,file);
-    fread(&textureIndexSize,4,1,file);
+    callbacks->read(&dentingSize,4,1,handle);
+    callbacks->read(&shininessSize,4,1,handle);
+    callbacks->read(&textureIndexSize,4,1,handle);
 
     unsigned char* dentingData = new unsigned char[dentingSize];
-    fread(offsets,4,11,file);
-    fread(dentingData,dentingSize,1,file);
+    callbacks->read(offsets,4,11,handle);
+    callbacks->read(dentingData,dentingSize,1,handle);
     offsets[11] = dentingSize;
 
     for(int i = 0; i < 11; i++)
@@ -309,8 +317,8 @@ int DriverDenting::loadCivilianDentingFromFile(FILE* file)
     delete[] dentingData;
 
     unsigned char* shininessData = new unsigned char[shininessSize];
-    fread(offsets,4,11,file);
-    fread(shininessData,shininessSize,1,file);
+    callbacks->read(offsets,4,11,handle);
+    callbacks->read(shininessData,shininessSize,1,handle);
     offsets[11] = shininessSize;
 
     for(int i = 0; i < 11; i++)
@@ -321,8 +329,8 @@ int DriverDenting::loadCivilianDentingFromFile(FILE* file)
     delete[] shininessData;
 
     unsigned char* textureIndexData = new unsigned char[textureIndexSize];
-    fread(offsets,4,11,file);
-    fread(textureIndexData,textureIndexSize,1,file);
+    callbacks->read(offsets,4,11,handle);
+    callbacks->read(textureIndexData,textureIndexSize,1,handle);
     offsets[11] = textureIndexSize;
 
     for(int i = 0; i < 11; i++)
@@ -333,70 +341,6 @@ int DriverDenting::loadCivilianDentingFromFile(FILE* file)
     delete[] textureIndexData;
 
     return 0;
-};
-
-int DriverDenting::loadCivilianDentingFromMemory(const unsigned char* data)
-{
-    if(!data)
-    return 0;
-
-    int version;
-    int dentingSize,shininessSize,textureIndexSize;
-    unsigned int offsets[12];
-
-    version = *(int*)(data);
-    data += 4;
-    if(version != 2)
-    return -1;
-
-    dentingSize = *(int*)(data);
-    shininessSize = *(int*)(data+4);
-    textureIndexSize = *(int*)(data+8);
-    data += 12;
-
-    const unsigned char* dentingData;
-    const unsigned char* shininessData;
-    const unsigned char* textureIndexData;
-
-    memcpy(offsets,data,44);
-    data += 44;
-    dentingData = data;
-    data += dentingSize;
-    offsets[11] = dentingSize;
-
-    for(int i = 0; i < 11; i++)
-    {
-        unsigned int sectionOffset = 24;
-        for(int j = 0; j < 6; j++)
-        {
-            civilianDenting(i)->getDentingSection(j)->setData((unsigned short*)(dentingData+offsets[i]+sectionOffset),*(int*)(dentingData+j*4));
-            sectionOffset += 2*(*(int*)(dentingData+j*4));
-        }
-    }
-
-    memcpy(offsets,data,44);
-    data += 44;
-    shininessData = data;
-    data += shininessSize;
-    offsets[11] = shininessSize;
-
-    for(int i = 0; i < 11; i++)
-    {
-        civilianDenting(i)->setShininessData(shininessData+offsets[i],offsets[i+1]-offsets[i]);
-    }
-
-    memcpy(offsets,data,44);
-    data += 44;
-    textureIndexData = data;
-    data += textureIndexSize;
-    offsets[11] = textureIndexSize;
-
-    for(int i = 0; i < 11; i++)
-    {
-        civilianDenting(i)->setTextureIndexData(textureIndexData+offsets[i],offsets[i+1]-offsets[i]);
-    }
-
-    return 44*3+16+dentingSize+shininessSize+textureIndexSize;
 };
 
 int DriverDenting::loadPlayerDentingFromFile(const char* filename)
@@ -413,7 +357,16 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
 {
     if(!file)
     return 1;
-    fseek(file,18*4,SEEK_SET); //offsets to individual cars, not important since we're loading all of them.
+
+    return loadPlayerDenting(&fileCallbacks, (IOHandle)file);
+};
+
+int DriverDenting::loadPlayerDenting(IOCallbacks* callbacks, IOHandle handle)
+{
+    if(!callbacks || !handle)
+    return 1;
+
+    callbacks->seek(handle,18*4,SEEK_SET); //offsets to individual cars, not important since we're loading all of them.
 
     int size = 0;
     unsigned char* data = NULL;
@@ -422,7 +375,7 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
 
     for(int i = 0; i < 18; i++)
     {
-        fread(&size,4,1,file);
+        callbacks->read(&size,4,1,handle);
         if(size > dataSize)
         {
             dataSize = size;
@@ -430,7 +383,7 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
             delete[] data;
             data = new unsigned char[dataSize];
         }
-        fread(data,size,1,file);
+        callbacks->read(data,size,1,handle);
 
         sectionOffset = 24;
         for(int j = 0; j < 6; j++)
@@ -439,7 +392,7 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
             sectionOffset += (*(int*)(data+j*4))*2;
         }
 
-        fread(&size,4,1,file);
+        callbacks->read(&size,4,1,handle);
         if(size > dataSize)
         {
             dataSize = size;
@@ -447,11 +400,11 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
             delete[] data;
             data = new unsigned char[dataSize];
         }
-        fread(data,size,1,file);
+        callbacks->read(data,size,1,handle);
 
         playerDenting(i)->setShininessData(data,size);
 
-        fread(&size,4,1,file);
+        callbacks->read(&size,4,1,handle);
         if(size > dataSize)
         {
             dataSize = size;
@@ -459,7 +412,7 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
             delete[] data;
             data = new unsigned char[dataSize];
         }
-        fread(data,size,1,file);
+        callbacks->read(data,size,1,handle);
 
         playerDenting(i)->setTextureIndexData(data,size);
     }
@@ -470,45 +423,21 @@ int DriverDenting::loadPlayerDentingFromFile(FILE* file)
     return 0;
 };
 
-int DriverDenting::loadPlayerDentingFromMemory(const unsigned char* data)
+int DriverDenting::getCivilianDentingSize()
 {
-    if(!data)
-    return 0;
+    int size = 412;
 
-    data += 18*4; //offsets to individual cars, not important since we're loading all of them.
-
-    int size = 0;
-    int totalSize = 18*4;
-    int sectionOffset;
-
-    for(int i = 0; i < 18; i++)
+    for(int i = 0; i < 11; i++)
     {
-        size = *(int*)(data);
-        data += 4;
-
-        sectionOffset = 24;
         for(int j = 0; j < 6; j++)
         {
-            playerDenting(i)->getDentingSection(j)->setData((unsigned short*)(data+sectionOffset),*(int*)(data+j*4));
-            sectionOffset += (*(int*)(data+j*4))*2;
+            size += civilianDenting(i)->getDentingSection(j)->getNumVertices()*2;
         }
-
-        data += sectionOffset;
-        totalSize += 4+sectionOffset;
-
-        size = *(int*)(data);
-        data += 4;
-        totalSize += 4+size;
-
-        playerDenting(i)->setShininessData(data,size);
-
-        size = *(int*)(data);
-        data += 4;
-        totalSize += 4+size;
-
-        playerDenting(i)->setTextureIndexData(data,size);
+        size += civilianDenting(i)->getNumTextureIndexFaces();
+        size += civilianDenting(i)->getNumShininessFaces();
     }
-    return totalSize;
+
+    return size;
 };
 
 int DriverDenting::saveCivilianDentingToFile(const char* filename)
@@ -526,8 +455,16 @@ int DriverDenting::saveCivilianDentingToFile(FILE* file)
     if(!file)
     return 1;
 
+    return saveCivilianDenting(&fileCallbacks, (IOHandle)file);
+};
+
+int DriverDenting::saveCivilianDenting(IOCallbacks* callbacks, IOHandle handle)
+{
+    if(!callbacks || !handle)
+        return 1;
+
     int version = 2;
-    fwrite(&version,4,1,file);
+    callbacks->write(&version,4,1,handle);
 
     //write total size of denting data memory chunk
     int size = 0;
@@ -539,7 +476,7 @@ int DriverDenting::saveCivilianDentingToFile(FILE* file)
             size += civilianDenting(i)->getDentingSection(j)->getNumVertices()*2;
         }
     }
-    fwrite(&size,4,1,file);
+    callbacks->write(&size,4,1,handle);
 
     //write total size of shininess memory chunk
     size = 0;
@@ -547,7 +484,7 @@ int DriverDenting::saveCivilianDentingToFile(FILE* file)
     {
         size += civilianDenting(i)->getNumShininessFaces();
     }
-    fwrite(&size,4,1,file);
+    callbacks->write(&size,4,1,handle);
 
     //write total size of texture index block
     size = 0;
@@ -555,13 +492,13 @@ int DriverDenting::saveCivilianDentingToFile(FILE* file)
     {
         size += civilianDenting(i)->getNumTextureIndexFaces();
     }
-    fwrite(&size,4,1,file);
+    callbacks->write(&size,4,1,handle);
 
     //write offsets in memory block to each car's denting data first, then write all data
     int offset = 0;
     for(int i = 0; i < 11; i++)
     {
-        fwrite(&offset,4,1,file);
+        callbacks->write(&offset,4,1,handle);
         offset += 24;
         for(int j = 0; j < 6; j++)
         {
@@ -574,13 +511,13 @@ int DriverDenting::saveCivilianDentingToFile(FILE* file)
         for(int j = 0; j < 6; j++)
         {
             int sectionSize = civilianDenting(i)->getDentingSection(j)->getNumVertices();
-            fwrite(&sectionSize,4,1,file);
+            callbacks->write(&sectionSize,4,1,handle);
         }
 
         for(int j = 0; j < 6; j++)
         {
             int sectionSize = civilianDenting(i)->getDentingSection(j)->getNumVertices();
-            fwrite(civilianDenting(i)->getDentingSection(j)->data(),1,sectionSize*2,file);
+            callbacks->write(civilianDenting(i)->getDentingSection(j)->data(),1,sectionSize*2,handle);
         }
     }
 
@@ -588,133 +525,42 @@ int DriverDenting::saveCivilianDentingToFile(FILE* file)
     offset = 0;
     for(int i = 0; i < 11; i++)
     {
-        fwrite(&offset,4,1,file);
+        callbacks->write(&offset,4,1,handle);
         offset += civilianDenting(i)->getNumShininessFaces();
     }
 
     for(int i = 0; i < 11; i++)
     {
-        fwrite(civilianDenting(i)->getShininessData(),1,civilianDenting(i)->getNumShininessFaces(),file);
+        callbacks->write(civilianDenting(i)->getShininessData(),1,civilianDenting(i)->getNumShininessFaces(),handle);
     }
 
     //write offsets in memory block to each car's data first, then write all data
     offset = 0;
     for(int i = 0; i < 11; i++)
     {
-        fwrite(&offset,4,1,file);
+        callbacks->write(&offset,4,1,handle);
         offset += civilianDenting(i)->getNumTextureIndexFaces();
     }
 
     for(int i = 0; i < 11; i++)
     {
-        fwrite(civilianDenting(i)->getTextureIndexData(),1,civilianDenting(i)->getNumTextureIndexFaces(),file);
+        callbacks->write(civilianDenting(i)->getTextureIndexData(),1,civilianDenting(i)->getNumTextureIndexFaces(),handle);
     }
     return 0;
 };
 
-int DriverDenting::saveCivilianDentingToMemory(unsigned char* data)
+int DriverDenting::getPlayerDentingSize()
 {
-    if(!data)
-    return 0;
-
-    int version = 2;
-    *(int*)(data) = version;
-    data += 4;
-
-    unsigned char* startData = data;
-
-    //write total size of denting data memory chunk
-    int size = 0;
-    for(int i = 0; i < 11; i++)
+    int size = 18*4;
+    for(int i = 0; i < 18; i++)
     {
-        size += 24;
+        size += 4+6*4+4+playerDenting(i)->getNumShininessFaces()+4+playerDenting(i)->getNumTextureIndexFaces();
         for(int j = 0; j < 6; j++)
         {
-            size += civilianDenting(i)->getDentingSection(j)->getNumVertices()*2;
+            size += playerDenting(i)->getDentingSection(j)->getNumVertices()*2;
         }
     }
-    *(int*)(data) = size;
-    data += 4;
-
-    //write total size of shininess memory chunk
-    size = 0;
-    for(int i = 0; i < 11; i++)
-    {
-        size += civilianDenting(i)->getNumShininessFaces();
-    }
-    *(int*)(data) = size;
-    data += 4;
-
-    //write total size of texture index block
-    size = 0;
-    for(int i = 0; i < 11; i++)
-    {
-        size += civilianDenting(i)->getNumTextureIndexFaces();
-    }
-    *(int*)(data) = size;
-    data += 4;
-
-    //write offsets in memory block to each car's denting data first, then write all data
-    int offset = 0;
-    for(int i = 0; i < 11; i++)
-    {
-        *(int*)(data) = offset;
-        data += 4;
-        offset += 24;
-        for(int j = 0; j < 6; j++)
-        {
-            offset += civilianDenting(i)->getDentingSection(j)->getNumVertices()*2;
-        }
-    }
-
-    for(int i = 0; i < 11; i++)
-    {
-        for(int j = 0; j < 6; j++)
-        {
-            int sectionSize = civilianDenting(i)->getDentingSection(j)->getNumVertices();
-
-            *(int*)(data) = sectionSize;
-            data += 4;
-        }
-
-        for(int j = 0; j < 6; j++)
-        {
-            int sectionSize = civilianDenting(i)->getDentingSection(j)->getNumVertices();
-            memcpy(data,civilianDenting(i)->getDentingSection(j)->data(),sectionSize*2);
-            data += sectionSize*2;
-        }
-    }
-
-    //write offsets in memory block to each car's shininess data first, then write all data
-    offset = 0;
-    for(int i = 0; i < 11; i++)
-    {
-        *(int*)(data) = offset;
-        data += 4;
-        offset += civilianDenting(i)->getNumShininessFaces();
-    }
-
-    for(int i = 0; i < 11; i++)
-    {
-        memcpy(data,civilianDenting(i)->getShininessData(),civilianDenting(i)->getNumShininessFaces());
-        data += civilianDenting(i)->getNumShininessFaces();
-    }
-
-    //write offsets in memory block to each car's data first, then write all data
-    offset = 0;
-    for(int i = 0; i < 11; i++)
-    {
-        *(int*)(data) = offset;
-        data += 4;
-        offset += civilianDenting(i)->getNumTextureIndexFaces();
-    }
-
-    for(int i = 0; i < 11; i++)
-    {
-        memcpy(data,civilianDenting(i)->getTextureIndexData(),civilianDenting(i)->getNumTextureIndexFaces());
-        data += civilianDenting(i)->getNumTextureIndexFaces();
-    }
-    return data-startData;
+    return size;
 };
 
 int DriverDenting::savePlayerDentingToFile(const char* filename)
@@ -730,12 +576,20 @@ int DriverDenting::savePlayerDentingToFile(const char* filename)
 int DriverDenting::savePlayerDentingToFile(FILE* file)
 {
     if(!file)
+        return 1;
+
+    return savePlayerDenting(&fileCallbacks, (IOHandle)file);
+};
+
+int DriverDenting::savePlayerDenting(IOCallbacks* callbacks, IOHandle handle)
+{
+    if(!callbacks || !handle)
     return 1;
 
     int offset = 0;
     for(int i = 0; i < 18; i++)
     {
-        fwrite(&offset,4,1,file);
+        callbacks->write(&offset,4,1,handle);
         offset += 24+12;//24(4*6) for denting section sizes, 12(4*3) for each data section
         for(int j = 0; j < 6; j++)
         {
@@ -754,93 +608,29 @@ int DriverDenting::savePlayerDentingToFile(FILE* file)
         {
             size += playerDenting(i)->getDentingSection(j)->getNumVertices()*2;
         }
-        fwrite(&size,4,1,file);
+        callbacks->write(&size,4,1,handle);
 
         //write denting data section sizes
         for(int j = 0; j < 6; j++)
         {
             size = playerDenting(i)->getDentingSection(j)->getNumVertices();
-            fwrite(&size,4,1,file);
+            callbacks->write(&size,4,1,handle);
         }
         //write denting data
         for(int j = 0; j < 6; j++)
         {
-            fwrite(playerDenting(i)->getDentingSection(j)->data(),playerDenting(i)->getDentingSection(j)->getNumVertices()*2,1,file);
+            callbacks->write(playerDenting(i)->getDentingSection(j)->data(),playerDenting(i)->getDentingSection(j)->getNumVertices()*2,1,handle);
         }
 
         //write shininess data
         size = playerDenting(i)->getNumShininessFaces();
-        fwrite(&size,4,1,file);
-        fwrite(playerDenting(i)->getShininessData(),size,1,file);
+        callbacks->write(&size,4,1,handle);
+        callbacks->write(playerDenting(i)->getShininessData(),size,1,handle);
 
         //write texture index data (shouldn't be needed for playercars, but for uniformity it is included.
         size = playerDenting(i)->getNumTextureIndexFaces();
-        fwrite(&size,4,1,file);
-        fwrite(playerDenting(i)->getTextureIndexData(),size,1,file);
+        callbacks->write(&size,4,1,handle);
+        callbacks->write(playerDenting(i)->getTextureIndexData(),size,1,handle);
     }
     return 0;
-};
-
-int DriverDenting::savePlayerDentingToMemory(unsigned char* data)
-{
-    if(!data)
-    return 0;
-
-    unsigned char* startData = data;
-
-    int offset = 0;
-    for(int i = 0; i < 18; i++)
-    {
-        *(int*)(data) = offset;
-        data += 4;
-        offset += 24+12;//24(4*6) for denting section sizes, 12(4*3) for each data section
-        for(int j = 0; j < 6; j++)
-        {
-            offset += playerDenting(i)->getDentingSection(j)->getNumVertices()*2;
-        }
-        offset += playerDenting(i)->getNumShininessFaces();
-        offset += playerDenting(i)->getNumTextureIndexFaces();
-    }
-
-    int size = 0;
-    for(int i = 0; i < 18; i++)
-    {
-        //write size of denting data memory chunk
-        size = 24;
-        for(int j = 0; j < 6; j++)
-        {
-            size += playerDenting(i)->getDentingSection(j)->getNumVertices()*2;
-        }
-        *(int*)(data) = size;
-        data += 4;
-
-        //write denting data section sizes
-        for(int j = 0; j < 6; j++)
-        {
-            size = playerDenting(i)->getDentingSection(j)->getNumVertices();
-            *(int*)(data) = size;
-            data += 4;
-        }
-        //write denting data
-        for(int j = 0; j < 6; j++)
-        {
-            memcpy(data,playerDenting(i)->getDentingSection(j)->data(),playerDenting(i)->getDentingSection(j)->getNumVertices()*2);
-            data += playerDenting(i)->getDentingSection(j)->getNumVertices()*2;
-        }
-
-        //write shininess data
-        size = playerDenting(i)->getNumShininessFaces();
-        *(int*)(data) = size;
-        data += 4;
-        memcpy(data,playerDenting(i)->getShininessData(),size);
-        data += size;
-
-        //write texture index data (shouldn't be needed for playercars, but for uniformity it is included.
-        size = playerDenting(i)->getNumTextureIndexFaces();
-        *(int*)(data) = size;
-        data += 4;
-        memcpy(data,playerDenting(i)->getTextureIndexData(),size);
-        data += size;
-    }
-    return data-startData;
 };

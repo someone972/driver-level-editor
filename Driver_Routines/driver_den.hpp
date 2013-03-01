@@ -1,10 +1,9 @@
 #ifndef DRIVER_DEN_HPP
 #define DRIVER_DEN_HPP
 
-#include <iostream>
 #include <cstdlib>
-#include <fstream>
 #include <cstring>
+#include "ioFuncs.hpp"
 
 using namespace std;
 
@@ -64,19 +63,21 @@ class DriverDenting
 
         int loadCivilianDentingFromFile(const char* filename);
         int loadCivilianDentingFromFile(FILE* file);
-        int loadCivilianDentingFromMemory(const unsigned char* data);
+        int loadCivilianDenting(IOCallbacks* callbacks, IOHandle handle);
 
         int loadPlayerDentingFromFile(const char* filename);
         int loadPlayerDentingFromFile(FILE* file);
-        int loadPlayerDentingFromMemory(const unsigned char* data);
+        int loadPlayerDenting(IOCallbacks* callbacks, IOHandle handle);
 
+        int getCivilianDentingSize();
         int saveCivilianDentingToFile(const char* filename);
         int saveCivilianDentingToFile(FILE* file);
-        int saveCivilianDentingToMemory(unsigned char* data);
+        int saveCivilianDenting(IOCallbacks* callbacks, IOHandle handle);
 
+        int getPlayerDentingSize();
         int savePlayerDentingToFile(const char* filename);
         int savePlayerDentingToFile(FILE* file);
-        int savePlayerDentingToMemory(unsigned char* data);
+        int savePlayerDenting(IOCallbacks* callbacks, IOHandle handle);
 
         DentingEntry* civilianDenting(int idx);
         DentingEntry* playerDenting(int idx);
