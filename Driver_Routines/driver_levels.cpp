@@ -480,7 +480,7 @@ int DriverLevel::save(IOHandle handle, IOCallbacks* callbacks, unsigned int save
 
     if(!handle)
     {
-        log->Log("ERROR: File pointer is NULL!");
+        log->Log("ERROR: Invalid I/O handle!");
         return 1;
     }
 

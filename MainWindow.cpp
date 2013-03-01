@@ -676,7 +676,9 @@ void MainWindow::saveLevel(QString filename, unsigned int bitfield)
     {
         switch(ret)
         {
-            //TODO: fill with actual error messages
+            case 1:
+                msgBox.setInformativeText(tr("Invalid I/O handle!"));
+                break;
             default:
                 msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
                 break;
@@ -837,54 +839,4 @@ void MainWindow::saveCivilianCosmetics(QString filename)
 void MainWindow::saveWheelDefinitions(QString filename)
 {
     //TODO: Implement wheel definition saving
-};
-
-void MainWindow::handleTextureChange(int tex)
-{
-    //FIXME: Deprecated. Remove.
-    levelHasChanged = true;
-    setWindowModified(true);
-    levelTextures.rebuildTexture(tex);
-    emit updateTexture(tex);
-};
-
-void MainWindow::handlePaletteChange(int pal)
-{
-    //FIXME: Deprecated. Remove.
-    levelHasChanged = true;
-    setWindowModified(true);
-    for(int i = 0; i < d3d.getNumEntries(); i++)
-    {
-        D3DEntry* entry = d3d.getEntry(i);
-        for(int j = 0; j < entry->getNumPaletteIndicies(); j++)
-        {
-            if(entry->getPaletteIndex(j) == pal)
-            {
-                levelTextures.rebuildTexture(entry->getTexture());
-                emit updateTexture(entry->getTexture());
-                break;
-            }
-        }
-    }
-    emit updatePalette(pal);
-};
-
-void MainWindow::handleD3dChange()
-{
-    //FIXME: Deprecated. Remove.
-    d3dHasChanged = true;
-    setWindowModified(true);
-    levelTextures.rebuildAllTextures();
-    emit updateTextures();
-    emit updateD3D();
-};
-
-void MainWindow::handleD3dEntryChange(int tex, int pal)
-{
-    //FIXME: Deprecated. Remove.
-    d3dHasChanged = true;
-    setWindowModified(true);
-    levelTextures.rebuildTexture(tex);
-    emit updateTexture(tex);
-    emit updateD3D();
 };

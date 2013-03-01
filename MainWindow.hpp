@@ -63,14 +63,6 @@ class MainWindow : public QMainWindow
         void viewDefinitionEditor();
         void viewTextureBrowser();
 
-        //Handlers for level changes
-        void handleTextureChange(int);
-        void handlePaletteChange(int);
-
-        //Handlers for d3d changes
-        void handleD3dChange();
-        void handleD3dEntryChange(int tex, int pal);
-
         void saveAll();
         void saveLevel(QString filename, unsigned int bitfield);
         void saveD3D(QString filename);

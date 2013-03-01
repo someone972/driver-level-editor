@@ -91,7 +91,6 @@ class D3DEntry
          * \param pal The palette index to set as the value of the newly inserted index.
          * \param before [optional] If set to true (the default) the index will be inserted before the current position, otherwise will be inserted after the current position.
          */
-         //TODO: Remove before argument, make it always before.
         void insertPaletteIndex(int idx,int pal);
 
         /*! Adds a new index to the end of the list.

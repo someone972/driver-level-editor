@@ -736,8 +736,14 @@ int DriverTextures::load(IOHandle handle, IOCallbacks* callbacks, int size, Debu
     memset(paletteIndex,0xFF,sizeof(int)*paletteIndexSize); //set all slots to -1
     for(int i = 0; i < numPalettes; i++)
     {
-        //TODO: bounds check
-        paletteIndex[palettes[i]->paletteNumber] = i;
+        if(palettes[i]->paletteNumber >= 0 && palettes[i]->paletteNumber < paletteIndexSize)
+        {
+            paletteIndex[palettes[i]->paletteNumber] = i;
+        }
+        else
+        {
+            log->Log(DEBUG_LEVEL_NORMAL, "WARNING: Palette %d has out of bounds slot %d.", i, palettes[i]->paletteNumber);
+        }
     }
 
     callbacks->read(&numTextures,4,1,handle);
@@ -903,7 +909,6 @@ void DriverTextures::addTexture(unsigned short flags, short carnum)
     textures = temp;
     textures[numTextures] = new DriverTexture(flags,carnum);
     numTextures++;
-    //TODO: update this func
 };
 
 short DriverTextures::getNumPalettes()
