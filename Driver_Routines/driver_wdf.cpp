@@ -24,19 +24,19 @@ int DriverWheelDefinitions::loadFromFile(const char* filename)
 int DriverWheelDefinitions::loadFromFile(FILE* file)
 {
     if(!file)
-    return 1;
-    fread(playerData,0x900,1,file);
-    fread(civilianData,0x480,1,file);
-    return 0;
+        return 1;
+
+    return load(&fileCallbacks, (IOHandle)file);
 };
 
-int DriverWheelDefinitions::loadFromMemory(const unsigned char* data)
+int DriverWheelDefinitions::load(IOCallbacks* callbacks, IOHandle handle)
 {
-    if(!data)
+    if(!callbacks || !handle)
+        return 1;
+
+    callbacks->read(playerData,0x900,1,handle);
+    callbacks->read(civilianData,0x480,1,handle);
     return 0;
-    memcpy(playerData,data,0x900);
-    memcpy(civilianData,data+0x900,0x480);
-    return 0x900+0x480;
 };
 
 int DriverWheelDefinitions::saveToFile(const char* filename)
@@ -52,19 +52,19 @@ int DriverWheelDefinitions::saveToFile(const char* filename)
 int DriverWheelDefinitions::saveToFile(FILE* file)
 {
     if(!file)
-    return 1;
-    fwrite(playerData,0x900,1,file);
-    fwrite(civilianData,0x480,1,file);
-    return 0;
+        return 1;
+
+    return save(&fileCallbacks, (IOHandle)file);
 };
 
-int DriverWheelDefinitions::saveToMemory(unsigned char* data)
+int DriverWheelDefinitions::save(IOCallbacks* callbacks, IOHandle handle)
 {
-    if(!data)
+    if(!callbacks || !handle)
+        return 1;
+
+    callbacks->write(playerData,0x900,1,handle);
+    callbacks->write(civilianData,0x480,1,handle);
     return 0;
-    memcpy(data,playerData,0x900);
-    memcpy(data+0x900,civilianData,0x480);
-    return 0x900+0x480;
 };
 
 const char* DriverWheelDefinitions::getCleanWheelName(int carnum,bool civcar)

@@ -1,9 +1,10 @@
 #ifndef DRIVER_WDF_HPP
 #define DRIVER_WDF_HPP
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <fstream>
+#include "ioFuncs.hpp"
 
 class DriverWheelDefinitions
 {
@@ -13,11 +14,11 @@ class DriverWheelDefinitions
 
         int loadFromFile(const char* filename);
         int loadFromFile(FILE* file);
-        int loadFromMemory(const unsigned char* data);
+        int load(IOCallbacks* callbacks, IOHandle handle);
 
         int saveToFile(const char* filename);
         int saveToFile(FILE* file);
-        int saveToMemory(unsigned char* data);
+        int save(IOCallbacks* callbacks, IOHandle handle);
 
         const char* getCleanWheelName(int carnum,bool civcar);
         const char* getFastWheelName(int carnum,bool civcar);
