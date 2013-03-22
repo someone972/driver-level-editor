@@ -218,9 +218,170 @@ void EventModelList::resetList()
     endResetModel();
 };
 
-ModelView::ModelView(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f) : QWidget(parent)
+ModelView::ModelView(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f, DebugLogger* logger) : QGLWidget(parent, shareWidget, f)
 {
+    if(logger)
+        log = logger;
+    else log = &dummy;
 
+    level = NULL;
+    textures = NULL;
+    render = NULL;
+    dragging = false;
+    modelIndex = -1;
+    eventModelIndex = -1;
+    camera.setCameraMode(CAMERA_FOCAL_POINT);
+    camera.setDistance(2000);
+    camera.setYaw(45.0);
+    camera.setPitch(45.0);
+};
+
+ModelView::~ModelView()
+{
+    if(render)
+        delete render;
+    if(shaders)
+        delete shaders;
+    if(matrixHandler)
+        delete matrixHandler;
+};
+
+void ModelView::setLevel(DriverLevel* lev)
+{
+    level = lev;
+    if(level)
+    {
+        if(level->models.getNumModels() > 0)
+        {
+            if(render)
+            render->buildRenderData(level->models.getModel(90), level->models.getReferencedModel(level->models.getModel(90)));
+            updateGL();
+        cout<<"YOLO"<<endl;
+        }
+    }
+};
+
+void ModelView::setModelIndex(int idx)
+{
+    modelIndex = idx;
+    if(render)
+    {
+        if(modelIndex >= 0 && modelIndex < level->models.getNumModels())
+        {
+            const DriverModel* model = level->models.getModel(modelIndex);
+            if(model)
+            {
+                const DriverModel* referencedModel = level->models.getReferencedModel(model);
+                Vector3f center = referencedModel->getCenter();
+                camera.setPosition(center.x, center.y, center.z);
+                camera.setDistance(referencedModel->getBoundingSphereRadius()+1000);
+                render->buildRenderData(model, referencedModel);
+            }
+            else render->cleanup();
+        }
+    }
+    else render->cleanup();
+    updateGL();
+};
+
+void ModelView::setEventModelIndex(int idx)
+{
+    eventModelIndex = idx;
+
+    updateGL();
+};
+
+void ModelView::setTextureProvider(TextureList* list)
+{
+    textures = list;
+};
+
+void ModelView::mousePressEvent(QMouseEvent* event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        lastPoint = event->pos();
+        dragging = true;
+    }
+};
+
+void ModelView::mouseReleaseEvent(QMouseEvent* event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        dragging = false;
+    }
+};
+
+void ModelView::mouseMoveEvent(QMouseEvent* event)
+{
+    if(dragging)
+    {
+        QPoint delta = lastPoint-event->pos();
+        camera.addYaw(delta.x());
+        camera.addPitch(delta.y());
+        lastPoint = event->pos();
+        updateGL();
+    }
+};
+
+void ModelView::wheelEvent(QWheelEvent* event)
+{
+    camera.addDistance(-10*event->delta());
+    updateGL();
+};
+
+void ModelView::initializeGL()
+{
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    shaders = new ModelShaders(context(), log);
+    matrixHandler = new ModelMatrixHandler(context(), shaders);
+    render = new ModelRenderer(context(), shaders, log);
+    camera.setMatrixHandler(matrixHandler);
+};
+
+void ModelView::resizeGL(int width, int height)
+{
+    glViewport(0,0,width,height);
+    matrixHandler->setPerspective(45.0,(double)width/(double)height, 1.0, 100000.0);
+};
+
+void ModelView::paintGL()
+{
+    glClearColor(0.5,0.7,1.0,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if(render)
+    {
+        for(int i = 0; i < render->getNumGroups(); i++)
+        {
+            cout<<i<<" "<<render->getTextureUsed(i)<<endl;
+            if(render->getTextureUsed(i) == -1)
+            {
+                glDisable(GL_TEXTURE_2D);
+            }
+            else
+            {
+                if(textures)
+                {
+                    const DriverTexture* tex = level->textures.getTexture(render->getTextureUsed(i));
+                    if(tex)
+                    {
+                        if(tex->getFlags()&TEX_HAS_TRANSPARENCY)
+                        {
+                            glEnable(GL_ALPHA_TEST);
+                            glAlphaFunc(GL_GREATER, 0.5);
+                            //TODO: disable alpha test
+                        }
+                    }
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, textures->getTexture(render->getTextureUsed(i)));
+                }
+            }
+
+            render->render(i);
+        }
+    }
 };
 
 RenderOptionsWidget::RenderOptionsWidget(QWidget* parent) : QWidget(parent)
@@ -393,11 +554,15 @@ void ModelReferenceDialog::doDialog(int modelIdx,bool event)
     exec();
 };
 
-ModelViewPanel::ModelViewPanel(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f) : QWidget(parent)
+ModelViewPanel::ModelViewPanel(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f, DebugLogger* logger) : QWidget(parent)
 {
     level = NULL;
 
-    modelView = new ModelView(this,shareWidget,f);
+    if(logger)
+        log = logger;
+    else log = &dummy;
+
+    modelView = new ModelView(this, shareWidget, f, log);
 
     namesListModel = new ModelNameList(NULL,this);
     namesList = new QTableView(this);
@@ -461,10 +626,18 @@ ModelViewPanel::ModelViewPanel(QWidget * parent, const QGLWidget * shareWidget, 
     horizontal->addLayout(vertical);
 
     setLayout(horizontal);
-
+    modelView->show();
+    modelView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     connect(namesList, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(doModelsContextMenu(const QPoint&)));
     connect(eventNamesList, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(doEventModelsContextMenu(const QPoint&)));
+    connect(namesList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(modelIndexChanged(const QModelIndex&, const QModelIndex&)));
+    connect(eventNamesList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(eventModelIndexChanged(const QModelIndex&, const QModelIndex&)));
 };
+
+ModelView* ModelViewPanel::glViewer()
+{
+    return modelView;
+}
 
 void ModelViewPanel::setLevel(DriverLevel* lev)
 {
@@ -472,12 +645,28 @@ void ModelViewPanel::setLevel(DriverLevel* lev)
     namesListModel->setLevel(level);
     eventNamesModel->setLevel(level);
     referenceDialog->setLevel(level);
+    modelView->setLevel(level);
+};
+
+void ModelViewPanel::setTextureProvider(TextureList* list)
+{
+    modelView->setTextureProvider(list);
 };
 
 void ModelViewPanel::handleLevelChange()
 {
     namesListModel->resetList();
     eventNamesModel->resetList();
+};
+
+void ModelViewPanel::modelIndexChanged(const QModelIndex& current, const QModelIndex& previous)
+{
+    modelView->setModelIndex(current.row());
+};
+
+void ModelViewPanel::eventModelIndexChanged(const QModelIndex& current, const QModelIndex& previous)
+{
+    modelView->setEventModelIndex(current.row());
 };
 
 void ModelViewPanel::doModelsContextMenu(const QPoint& point)

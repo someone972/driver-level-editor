@@ -286,7 +286,7 @@ void LevelTextures::rebuildTexture(int texture,unsigned char* buffer)
                     temppal.colors[i].r = i;
                     temppal.colors[i].g = i;
                     temppal.colors[i].b = i;
-                    temppal.colors[i].a = 0;
+                    temppal.colors[i].a = 255;
                 }
                 if(d3d)
                 {
@@ -330,9 +330,9 @@ void LevelTextures::rebuildTexture(int texture,unsigned char* buffer)
                     {
                         unsigned int index = (int)*(unsigned char*)(tex->getData()+k);
                         *(unsigned int*)(data+4*k) = palette->colors[index].r+(palette->colors[index].g<<8)+(palette->colors[index].b<<16);
-                        if(tex->hasTransparency())
-                        *(unsigned int*)(data+4*k)+=(palette->colors[index].a<<24);
-                        else *(unsigned int*)(data+4*k)+=(0xFF<<24);
+                        //if(tex->hasTransparency())
+                        //*(unsigned int*)(data+4*k)+=(palette->colors[index].a<<24);
+                        *(unsigned int*)(data+4*k)+=(0xFF<<24);
                     }
 
                     glBindTexture(GL_TEXTURE_2D, texlist[i]);

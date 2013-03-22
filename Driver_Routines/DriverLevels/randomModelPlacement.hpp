@@ -39,6 +39,7 @@ class RandomModelPlacements
         void setPlacement(int idx,RandomModelPlacement placement);
         void removePlacement(int idx);
         void addPlacement(RandomModelPlacement placement);
+
     protected:
         int numPlacements;
         RandomModelPlacement* placements;

@@ -80,6 +80,11 @@ class ModelFace
         void setColors(color_3ub c1, color_3ub c2, color_3ub c3, color_3ub c4);
 
         int getTexture();
+        int getVertexIndex(int idx);
+        int getNormalIndex(int idx);
+        color_3ub getColor(int idx);
+        Vector2f getTexCoord(int idx);
+        bool hasAttribute(unsigned int flag);
 
         int type,flags;
         int texture;
@@ -108,6 +113,9 @@ class DriverModel
         int getNumVertices() const;
         Vector3f getVertex(int idx) const;
 
+        int getNumNormals() const;
+        Vector3f getNormal(int idx) const;
+
         int getNumTexturesUsed() const;
         int getTextureUsed(int idx) const;
         void recalculateTexturesUsed();
@@ -116,8 +124,8 @@ class DriverModel
         ModelFace getFace(int idx) const;
         void setFace(int idx, ModelFace face);
 
-        Vector3f getCenter();
-        Vector3f getBounds(); //gets x,y,z lengths, relative to the center point.
+        Vector3f getCenter() const;
+        Vector3f getBounds() const; //gets x,y,z lengths, relative to the center point.
         float getBoundingCircleRadius() const; //radius ignoring y component, i.e. as a top down orthographic circle
         float getBoundingSphereRadius() const; //radius taking y into account
 
@@ -142,8 +150,9 @@ class DriverModel
         float boundingSphereRadius;
         float boundingCircleRadius;
 
-        Vector3f centerVector,boundsVector;
-        bool centerDirty,boundsDirty;
+        //Declared as mutable to allow for recalculating only upon request, even in const models
+        mutable Vector3f centerVector,boundsVector;
+        mutable bool centerDirty,boundsDirty;
 
         int modelRef;
 };
@@ -161,11 +170,12 @@ class ModelContainer
 
         int getNumModels();
         DriverModel* getModel(int idx);
-        DriverModel* getReferencedModel(DriverModel* mod);
+        const DriverModel* getModel(int idx) const;
         void insertModel(int idx);
         void appendModel();
 
-        DriverModel* getReferencedModel(const DriverModel* mod) const;
+        DriverModel* getReferencedModel(DriverModel* mod);
+        const DriverModel* getReferencedModel(const DriverModel* mod) const;
         int dereferenceModel(DriverModel* mod);
         int dereferenceModel(int idx);
     protected:

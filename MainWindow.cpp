@@ -59,22 +59,21 @@ MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
     aboutDialog->setThanks(tr("Thanks goes here!"));
     aboutDialog->setImage("data/about.png");
 
-    modelViewPanel = new ModelViewPanel(this);
+    modelViewPanel = new ModelViewPanel(this, NULL, 0, &mainLog);
     modelViewPanel->setLevel(&level);
+    modelViewPanel->setTextureProvider(&levelTextures);
     connect(this, SIGNAL(levelChanged()), modelViewPanel, SLOT(handleLevelChange()));
 
-    definitionEditor = new TextureDefinitionEditor(this); //Don't forget, this needs a share widget when model viewing is done
+    definitionEditor = new TextureDefinitionEditor(this, modelViewPanel->glViewer()); //Don't forget, this needs a share widget when model viewing is done
     definitionEditor->setLevel(&level);
     definitionEditor->setTextureProvider(&levelTextures);
     definitionEditor->overlay()->makeCurrent();
 
-    textureBrowser = new TextureBrowser(this,definitionEditor->overlay());
+    textureBrowser = new TextureBrowser(this, modelViewPanel->glViewer());
     textureBrowser->setLevel(&level);
     textureBrowser->setTextureList(&levelTextures);
     textureBrowser->setD3D(&d3d);
     connect(this, SIGNAL(levelChanged()), textureBrowser, SLOT(texturesChanged()));
-
-    definitionEditor->overlay()->makeCurrent();
 
     saveDialog = new SaveAsDialog(this);
     connect(saveDialog, SIGNAL(saveLevel(QString,unsigned int)), this, SLOT(saveLevel(QString,unsigned int)));
@@ -545,6 +544,7 @@ void MainWindow::openLevel(QString levFile,QString d3dFile,QString pcarDenFile,Q
     else mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition filename is empty, nothing to be done.");
 
     levelTextures.rebuildAllTextures();
+    modelViewPanel->setLevel(&level);
     saveDialog->setLevelFilename(levelString);
     saveDialog->setD3DFilename(d3dString);
 };

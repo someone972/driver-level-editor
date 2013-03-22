@@ -22,14 +22,14 @@ Debug:DEFINES += DEBUG_ENABLED
 TEMPLATE = app
 
 INCLUDEPATH += \
-    F:/CodeBlocks10/FreeImage/Dist
+    "$$(CODEBLOCKS_DIR)/FreeImage/Dist"
 
 Debug:LIBS += \
-	-L"F:/CodeBlocks10/FreeImage/Dist" \
+	-L"$$(CODEBLOCKS_DIR)/FreeImage/Dist" \
 	-lFreeImage
 
 Release:LIBS += \
-	-L"F:/CodeBlocks10/FreeImage/Dist" \
+	-L"$$(CODEBLOCKS_DIR)/FreeImage/Dist" \
 	-lFreeImage
 
 QMAKE_CXXFLAGS += \
@@ -75,6 +75,7 @@ HEADERS = \
     QtGUI/Palettes/PaletteDisplay.hpp \
     QtGUI/Palettes/AddPaletteDialog.hpp \
     QtGUI/Models/DriverModelView.hpp \
+    QtGUI/Models/ModelRenderer.hpp \
 	MainWindow.hpp
 SOURCES = \
     vector.cpp \
@@ -111,6 +112,7 @@ SOURCES = \
     QtGUI/Palettes/PaletteDisplay.cpp \
     QtGUI/Palettes/AddPaletteDialog.cpp \
     QtGUI/Models/DriverModelView.cpp \
+    QtGUI/Models/ModelRenderer.cpp \
 	MainWindow.cpp \
 	main.cpp
 TARGET = \

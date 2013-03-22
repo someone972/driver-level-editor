@@ -125,6 +125,8 @@ void TextureViewGL::setup()
     yDisplacement = 0;
     lastGridX = 0;
     lastGridY = 0;
+    textures = NULL;
+    textureList = NULL;
 
     timeKeeper = QTime(0,0);
     timeKeeper.start();

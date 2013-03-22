@@ -1,8 +1,11 @@
 #ifndef DRIVER_MODEL_VIEW_HPP
 #define DRIVER_MODEL_VIEW_HPP
+
 #include <QtOpenGL>
-#include <QtGUI>
+#include <QtWidgets>
+#include "../TextureList.hpp"
 #include "../../Driver_Routines/driver_levels.hpp"
+#include "ModelRenderer.hpp"
 
 class ModelNameList : public QAbstractTableModel
 {
@@ -53,12 +56,44 @@ class EventModelList : public QAbstractTableModel
         DriverLevel* level;
 };
 
-class ModelView : public QWidget
+class ModelView : public QGLWidget
 {
     Q_OBJECT
 
     public:
-        ModelView(QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0);
+        ModelView(QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0, DebugLogger* logger = NULL);
+        ~ModelView();
+
+        void setLevel(DriverLevel* lev);
+        void setTextureProvider(TextureList* list);
+
+    public slots:
+        void setModelIndex(int idx);
+        void setEventModelIndex(int idx);
+
+    protected:
+        void initializeGL();
+        void resizeGL(int width, int height);
+        void paintGL();
+        void mouseMoveEvent(QMouseEvent* event);
+        void mousePressEvent(QMouseEvent* event);
+        void mouseReleaseEvent(QMouseEvent* event);
+        void wheelEvent(QWheelEvent* event);
+
+        DebugLogger dummy;
+        DebugLogger* log;
+        DriverLevel* level;
+        TextureList* textures;
+        ModelRenderer* render;
+        ModelShaders* shaders;
+        ModelMatrixHandler* matrixHandler;
+        BasicCamera camera;
+
+        int modelIndex;
+        int eventModelIndex;
+
+        bool dragging;
+        QPoint lastPoint;
 };
 
 class RenderOptionsWidget : public QWidget
@@ -105,7 +140,8 @@ class ModelViewPanel : public QWidget
     Q_OBJECT
 
     public:
-        ModelViewPanel(QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0);
+        ModelViewPanel(QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0, DebugLogger* logger = NULL);
+        ModelView* glViewer();
 
     signals:
         void modelChanged(int idx);
@@ -126,8 +162,12 @@ class ModelViewPanel : public QWidget
         void importCurrentModel();
         void openCurrentModelProperties();
         void setLevel(DriverLevel* lev);
+        void setTextureProvider(TextureList* list);
         void insertModel(int index);
         void insertEventModel(int index);
+
+        void modelIndexChanged(const QModelIndex& current, const QModelIndex& previous);
+        void eventModelIndexChanged(const QModelIndex& current, const QModelIndex& previous);
 
     protected slots:
         void doModelsContextMenu(const QPoint& pos);
@@ -145,6 +185,8 @@ class ModelViewPanel : public QWidget
         RenderOptionsWidget* renderOptions;
         ModelReferenceDialog* referenceDialog;
 
+        DebugLogger dummy;
+        DebugLogger* log;
         QMenu* listContext;
         QAction* deleteModel;
         QAction* insertModelBefore;

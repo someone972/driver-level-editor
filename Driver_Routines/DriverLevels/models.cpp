@@ -312,6 +312,51 @@ int ModelFace::getTexture()
     return -1;
 };
 
+bool ModelFace::hasAttribute(unsigned int flag)
+{
+    return flags&flag;
+};
+
+int ModelFace::getVertexIndex(int idx)
+{
+    if(idx >= 0 && idx < 4)
+        return vertexIndicies[idx];
+    return -1;
+};
+
+int ModelFace::getNormalIndex(int idx)
+{
+    if(idx >= 0 && idx < 4)
+    {
+        if(flags&FACE_VERTEX_NORMAL)
+            return normalIndicies[idx];
+        else return normalIndicies[0];
+    }
+    return -1;
+};
+
+Vector2f ModelFace::getTexCoord(int idx)
+{
+    if(idx >= 0 && idx < 4)
+        return textureCoords[idx];
+    return Vector2f(0.0f,0.0f);
+};
+
+color_3ub ModelFace::getColor(int idx)
+{
+    if(idx >= 0 && idx < 4)
+    {
+        if(flags&FACE_VERTEX_RGB)
+            return colors[idx];
+        else return colors[0];
+    }
+    color_3ub temp;
+    temp.r = 0;
+    temp.g = 0;
+    temp.b = 0;
+    return temp;
+};
+
 DriverModel::DriverModel()
 {
     boundingSphereRadius = 0.0f;
@@ -1198,7 +1243,20 @@ Vector3f DriverModel::getVertex(int idx) const
     return Vector3f(0,0,0);
 };
 
-Vector3f DriverModel::getCenter()
+int DriverModel::getNumNormals() const
+{
+    return numNormals;
+};
+
+Vector3f DriverModel::getNormal(int idx) const
+{
+    if(idx >= 0 && idx < numNormals)
+    return normals[idx];
+    return Vector3f(0,0,0);
+};
+
+//getCenter and getBounds still considered as const because the object appears immutable from the user's perspective.
+Vector3f DriverModel::getCenter() const
 {
     if(centerDirty)
     {
@@ -1232,7 +1290,7 @@ Vector3f DriverModel::getCenter()
     return centerVector;
 };
 
-Vector3f DriverModel::getBounds()
+Vector3f DriverModel::getBounds() const
 {
     if(boundsDirty)
     {
@@ -1285,7 +1343,7 @@ int DriverModel::getTextureUsed(int idx) const
 {
     if(idx >= 0 && idx < numTexturesUsed)
     return texturesUsed[idx];
-    return 0;
+    return -1;
 };
 
 void DriverModel::recalculateTexturesUsed()
@@ -1400,6 +1458,13 @@ DriverModel* ModelContainer::getModel(int idx)
     return NULL;
 };
 
+const DriverModel* ModelContainer::getModel(int idx) const
+{
+    if(idx >= 0 && idx < numModels)
+    return models[idx];
+    return NULL;
+};
+
 void ModelContainer::appendModel()
 {
     insertModel(numModels);
@@ -1428,6 +1493,21 @@ DriverModel* ModelContainer::getReferencedModel(DriverModel* in)
     return NULL;
 
     DriverModel* mr = in;
+    while(mr->getModelReference() != -1)
+    {
+        if(mr->getModelReference() >= 0 && mr->getModelReference() < numModels && getModel(mr->getModelReference()) != mr)
+        mr = getModel(mr->getModelReference());
+        else return NULL;
+    }
+    return mr;
+};
+
+const DriverModel* ModelContainer::getReferencedModel(const DriverModel* in) const
+{
+    if(!in)
+    return NULL;
+
+    const DriverModel* mr = in;
     while(mr->getModelReference() != -1)
     {
         if(mr->getModelReference() >= 0 && mr->getModelReference() < numModels && getModel(mr->getModelReference()) != mr)
