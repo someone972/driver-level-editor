@@ -234,6 +234,7 @@ ModelView::ModelView(QWidget * parent, const QGLWidget * shareWidget, Qt::Window
     camera.setDistance(2000);
     camera.setYaw(45.0);
     camera.setPitch(45.0);
+    camera.setRoll(180.0);
 };
 
 ModelView::~ModelView()
@@ -274,7 +275,7 @@ void ModelView::setModelIndex(int idx)
                 const DriverModel* referencedModel = level->models.getReferencedModel(model);
                 Vector3f center = referencedModel->getCenter();
                 camera.setPosition(center.x, center.y, center.z);
-                camera.setDistance(referencedModel->getBoundingSphereRadius()+1000);
+                camera.setDistance(referencedModel->getBoundingSphereRadius()*3.0f);
                 render->buildRenderData(model, referencedModel);
             }
             else render->cleanup();

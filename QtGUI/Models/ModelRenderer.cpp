@@ -650,7 +650,7 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                         for(int k = 0; k < 4; k++)
                         {
                             tempVerts[k].x = v[k].x;
-                            tempVerts[k].y = -v[k].y;
+                            tempVerts[k].y = v[k].y;
                             tempVerts[k].z = v[k].z;
                             tempVerts[k].r = c[k].r;
                             tempVerts[k].g = c[k].g;
@@ -680,7 +680,7 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                         for(int k = 0; k < 4; k++)
                         {
                             tempVertsNorm[k].x = v[k].x;
-                            tempVertsNorm[k].y = -v[k].y;
+                            tempVertsNorm[k].y = v[k].y;
                             tempVertsNorm[k].z = v[k].z;
                             tempVertsNorm[k].nx = n[k].x;
                             tempVertsNorm[k].ny = n[k].y;
@@ -714,7 +714,7 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                         for(int k = 0; k < 4; k++)
                         {
                             tempVertsTex[k].x = v[k].x;
-                            tempVertsTex[k].y = -v[k].y;
+                            tempVertsTex[k].y = v[k].y;
                             tempVertsTex[k].z = v[k].z;
                             tempVertsTex[k].r = c[k].r;
                             tempVertsTex[k].g = c[k].g;
@@ -747,7 +747,7 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                         for(int k = 0; k < 4; k++)
                         {
                             tempVertsNormTex[k].x = v[k].x;
-                            tempVertsNormTex[k].y = -v[k].y;
+                            tempVertsNormTex[k].y = v[k].y;
                             tempVertsNormTex[k].z = v[k].z;
                             tempVertsNormTex[k].nx = n[k].x;
                             tempVertsNormTex[k].ny = n[k].y;
@@ -779,15 +779,15 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                         break;
                 }
 
-                indicies[currentTri[type]*3] = vertIdx[2];
+                indicies[currentTri[type]*3] = vertIdx[0];
                 indicies[currentTri[type]*3+1] = vertIdx[1];
-                indicies[currentTri[type]*3+2] = vertIdx[0];
+                indicies[currentTri[type]*3+2] = vertIdx[2];
                 currentTri[type]++;
                 if(face.hasAttribute(FACE_QUAD))
                 {
-                    indicies[currentTri[type]*3] = vertIdx[3];
+                    indicies[currentTri[type]*3] = vertIdx[0];
                     indicies[currentTri[type]*3+1] = vertIdx[2];
-                    indicies[currentTri[type]*3+2] = vertIdx[0];
+                    indicies[currentTri[type]*3+2] = vertIdx[3];
                     currentTri[type]++;
                 }
             }

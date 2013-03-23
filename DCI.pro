@@ -22,14 +22,14 @@ Debug:DEFINES += DEBUG_ENABLED
 TEMPLATE = app
 
 INCLUDEPATH += \
-    "$$(CODEBLOCKS_DIR)/FreeImage/Dist"
+    "$$(FREEIMAGE_INCLUDE_DIR)"
 
 Debug:LIBS += \
-	-L"$$(CODEBLOCKS_DIR)/FreeImage/Dist" \
+	-L"$$(FREEIMAGE_LIB_DIR)" \
 	-lFreeImage
 
 Release:LIBS += \
-	-L"$$(CODEBLOCKS_DIR)/FreeImage/Dist" \
+	-L"$$(FREEIMAGE_LIB_DIR)" \
 	-lFreeImage
 
 QMAKE_CXXFLAGS += \
