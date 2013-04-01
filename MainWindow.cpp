@@ -35,6 +35,18 @@ MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
     levelTextures.setTextureProvider(&level.textures);
     levelTextures.setD3D(&d3d);
 
+    if(QDir("./settings").exists())
+    {
+        mainLog.Log("Settings folder exists in working directory, settings will be saved portably.");
+        if(!QDir("./settings/User").exists())
+            QDir().mkdir("./settings/User");
+        if(!QDir("./settings/System").exists())
+            QDir().mkdir("./settings/System");
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, "./settings/User");
+        QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, "./settings/System");
+    }
+    else mainLog.Log("No settings folder found. Saving settings locally.");
+
 #ifdef DEBUG_ENABLED
     mainLog.Log("Executable is a debug build.");
     setWindowTitle(QApplication::translate("windowtitle", "Driver Level Editor [DEBUG][*]"));
