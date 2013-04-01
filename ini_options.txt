@@ -1,4 +1,0 @@
-
-[texture_names]
-allow_lowercase:bool
-allow_spaces:bool
