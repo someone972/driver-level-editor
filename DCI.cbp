@@ -96,8 +96,6 @@
 		<Unit filename="Driver_Routines/ioFuncs.cpp" />
 		<Unit filename="Driver_Routines/ioFuncs.hpp" />
 		<Unit filename="EventMgr.hpp" />
-		<Unit filename="INIParser.cpp" />
-		<Unit filename="INIParser.hpp" />
 		<Unit filename="Log_Routines/debug_logger.cpp" />
 		<Unit filename="Log_Routines/debug_logger.hpp" />
 		<Unit filename="Log_Routines/default_loggers.cpp" />

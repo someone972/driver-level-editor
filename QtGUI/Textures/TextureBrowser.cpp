@@ -378,19 +378,22 @@ void TextureBrowser::setD3D(DriverD3D* newd3d)
     d3d = newd3d;
 };
 
-void TextureBrowser::loadSettings(INI* settings)
+void TextureBrowser::loadSettings()
 {
-    exportDialog->loadSettings(settings);
-    importDialog->loadSettings(settings);
+    exportDialog->loadSettings();
+    importDialog->loadSettings();
 
+    QSettings settings;
+    setTextureSize(settings.value("TextureBrowser/textureSize",0).toInt());
 };
 
-void TextureBrowser::saveSettings(INI* settings)
+void TextureBrowser::saveSettings()
 {
-    exportDialog->saveSettings(settings);
-    importDialog->saveSettings(settings);
+    exportDialog->saveSettings();
+    importDialog->saveSettings();
 
-    settings->set_int("texture_browser","texture_size",textureSizeSelect->currentIndex());
+    QSettings settings;
+    settings.setValue("TextureBrowser/textureSize",textureSizeSelect->currentIndex());
 };
 
 void TextureBrowser::texturesChanged()

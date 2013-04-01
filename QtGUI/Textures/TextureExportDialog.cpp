@@ -418,65 +418,63 @@ void TextureExportDialog::setPaletteIndex(int idx)
     paletteIndex = idx;
 };
 
-void TextureExportDialog::loadSettings(INI* settings)
+void TextureExportDialog::loadSettings()
 {
-    selectedFilter = settings->get_string("texture_export_dialog","selected_filter","");
+    QSettings settings;
+    selectedFilter = settings.value("TextureExportDialog/selectedFilter","").toString();
+    exportDefinitions->setCheckState((settings.value("TextureExportDialog/exportDefinitions",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    lastImageExportDir = settings.value("directories/lastImageExportDir").toString();
 
-    bmpCompress->setCheckState((settings->get_bool("texture_export_dialog","bmp_compress_rle",false) ? Qt::Checked : Qt::Unchecked));
-    bmpMagicPink->setCheckState((settings->get_bool("texture_export_dialog","bmp_magic_pink",false) ? Qt::Checked : Qt::Unchecked));
+    bmpCompress->setCheckState((settings.value("TextureExportDialog/BMP/compressRLE",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    bmpMagicPink->setCheckState((settings.value("TextureExportDialog/BMP/magicPink",false).toBool() ? Qt::Checked : Qt::Unchecked));
 
-    pngExportWithTransparency->setCheckState((settings->get_bool("texture_export_dialog","png_export_transparency",false) ? Qt::Checked : Qt::Unchecked));
-    pngMagicPink->setCheckState((settings->get_bool("texture_export_dialog","png_magic_pink",false) ? Qt::Checked : Qt::Unchecked));
-    pngInterlaced->setCheckState((settings->get_bool("texture_export_dialog","png_interlace",false) ? Qt::Checked : Qt::Unchecked));
-    pngCompression->setCurrentIndex(settings->get_int("texture_export_dialog","png_compression",0));
+    pngExportWithTransparency->setCheckState((settings.value("TextureExportDialog/PNG/exportTransparency",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    pngMagicPink->setCheckState((settings.value("TextureExportDialog/PNG/magicPink",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    pngInterlaced->setCheckState((settings.value("TextureExportDialog/PNG/interlace",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    pngCompression->setCurrentIndex(settings.value("TextureExportDialog/PNG/compression",0).toInt());
 
-    jpegQualitySlider->setValue(settings->get_int("texture_export_dialog","jpeg_quality",100));
-    jpegQuality->setValue(settings->get_int("texture_export_dialog","jpeg_quality",100));
-    jpegProgressive->setCheckState((settings->get_bool("texture_export_dialog","jpeg_progressive",false) ? Qt::Checked : Qt::Unchecked));
-    jpegMagicPink->setCheckState((settings->get_bool("texture_export_dialog","jpeg_magic_pink",false) ? Qt::Checked : Qt::Unchecked));
+    jpegQualitySlider->setValue(settings.value("TextureExportDialog/JPEG/quality",100).toInt());
+    jpegQuality->setValue(settings.value("TextureExportDialog/JPEG/quality",100).toInt());
+    jpegProgressive->setCheckState((settings.value("TextureExportDialog/JPEG/progressive",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    jpegMagicPink->setCheckState((settings.value("TextureExportDialog/JPEG/magicPink",false).toBool() ? Qt::Checked : Qt::Unchecked));
 
-    gifExportMultiPalette->setCheckState((settings->get_bool("texture_export_dialog","gif_multi_palette",false) ? Qt::Checked : Qt::Unchecked));
+    gifExportMultiPalette->setCheckState((settings.value("TextureExportDialog/GIF/multiPalette",false).toBool() ? Qt::Checked : Qt::Unchecked));
 
-    tiffCompression->setCurrentIndex(settings->get_int("texture_export_dialog","tiff_compression",0));
-    tiffMagicPink->setCheckState((settings->get_bool("texture_export_dialog","tiff_magic_pink",false) ? Qt::Checked : Qt::Unchecked));
+    tiffCompression->setCurrentIndex(settings.value("TextureExportDialog/TIFF/compression",0).toInt());
+    tiffMagicPink->setCheckState((settings.value("TextureExportDialog/TIFF/magicPink",false).toBool() ? Qt::Checked : Qt::Unchecked));
 
-    tgaCompress->setCheckState((settings->get_bool("texture_export_dialog","tga_compress_rle",false) ? Qt::Checked : Qt::Unchecked));
-    tgaMagicPink->setCheckState((settings->get_bool("texture_export_dialog","tga_magic_pink",false) ? Qt::Checked : Qt::Unchecked));
-    tgaLastDepth = settings->get_int("texture_export_dialog","tga_last_depth",15);
-
-    exportDefinitions->setCheckState((settings->get_bool("texture_export_dialog","export_definitions",false) ? Qt::Checked : Qt::Unchecked));
-
-    lastImageExportDir = settings->get_string("directories", "last_image_export_dir", NULL);
+    tgaCompress->setCheckState((settings.value("TextureExportDialog/TGA/compressRLE",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    tgaMagicPink->setCheckState((settings.value("TextureExportDialog/TGA/magicPink",false).toBool() ? Qt::Checked : Qt::Unchecked));
+    tgaLastDepth = settings.value("TextureExportDialog/TGA/lastDepth",15).toInt();
 };
 
-void TextureExportDialog::saveSettings(INI* settings)
+void TextureExportDialog::saveSettings()
 {
-    settings->set_string("texture_export_dialog","selected_filter",selectedFilter.toLocal8Bit().data());
+    QSettings settings;
+    settings.setValue("TextureExportDialog/selectedFilter",selectedFilter);
+    settings.setValue("directories/lastImageExportDir",lastImageExportDir);
+    settings.setValue("TextureExportDialog/exportDefinitions",(exportDefinitions->checkState() == Qt::Checked ? true : false));
 
-    settings->set_bool("texture_export_dialog","bmp_compress_rle",(bmpCompress->checkState() == Qt::Checked ? true : false));
-    settings->set_bool("texture_export_dialog","bmp_magic_pink",(bmpMagicPink->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/BMP/compressRLE",(bmpCompress->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/BMP/magicPink",(bmpMagicPink->checkState() == Qt::Checked ? true : false));
 
-    settings->set_bool("texture_export_dialog","png_export_transparency",(pngExportWithTransparency->checkState() == Qt::Checked ? true : false));
-    settings->set_bool("texture_export_dialog","png_magic_pink",(pngMagicPink->checkState() == Qt::Checked ? true : false));
-    settings->set_bool("texture_export_dialog","png_interlace",(pngInterlaced->checkState() == Qt::Checked ? true : false));
-    settings->set_int("texture_export_dialog","png_compression",pngCompression->currentIndex());
+    settings.setValue("TextureExportDialog/PNG/exportTransparency",(pngExportWithTransparency->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/PNG/magicPink",(pngMagicPink->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/PNG/interlace",(pngInterlaced->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/PNG/compression",pngCompression->currentIndex());
 
-    settings->set_int("texture_export_dialog","jpeg_quality",jpegQuality->value());
-    settings->set_bool("texture_export_dialog","jpeg_progressive",(jpegProgressive->checkState() == Qt::Checked ? true : false));
-    settings->set_bool("texture_export_dialog","jpeg_magic_pink",(jpegMagicPink->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/JPEG/quality",jpegQuality->value());
+    settings.setValue("TextureExportDialog/JPEG/progressive",(jpegProgressive->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/JPEG/magicPink",(jpegMagicPink->checkState() == Qt::Checked ? true : false));
 
-    settings->set_bool("texture_export_dialog","gif_multi_palette",(gifExportMultiPalette->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/GIF/multiPalette",(gifExportMultiPalette->checkState() == Qt::Checked ? true : false));
 
-    settings->set_int("texture_export_dialog","tiff_compression",tiffCompression->currentIndex());
-    settings->set_bool("texture_export_dialog","tiff_magic_pink",(tiffMagicPink->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/TIFF/compression",tiffCompression->currentIndex());
+    settings.setValue("TextureExportDialog/TIFF/magicPink",(tiffMagicPink->checkState() == Qt::Checked ? true : false));
 
-    settings->set_bool("texture_export_dialog","tga_compress_rle",(tgaCompress->checkState() == Qt::Checked ? true : false));
-    settings->set_bool("texture_export_dialog","tga_magic_pink",(tgaMagicPink->checkState() == Qt::Checked ? true : false));
-    settings->set_int("texture_export_dialog","tga_last_depth",tgaLastDepth);
-
-    settings->set_bool("texture_export_dialog","export_definitions",(exportDefinitions->checkState() == Qt::Checked ? true : false));
-
-    settings->set_string("directories","last_image_export_dir",lastImageExportDir.toLocal8Bit().data());
+    settings.setValue("TextureExportDialog/TGA/compressRLE",(tgaCompress->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/TGA/magicPink",(tgaMagicPink->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/TGA/lastDepth",tgaLastDepth);
 };
 
 int TextureExportDialog::exec()

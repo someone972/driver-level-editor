@@ -5,7 +5,6 @@
 #include <FreeImage.h>
 #include "../../Driver_Routines/driver_levels.hpp"
 #include "../../Driver_Routines/driver_d3d.hpp"
-#include "../../INIParser.hpp"
 
 class FreeImageMemFile
 {
@@ -53,11 +52,11 @@ class TextureExportDialog : public QDialog
         void setPaletteIndex(int idx);
         void setTextureData(DriverTextures* texs);
         void setD3D(DriverD3D* newD3D);
-        void loadSettings(INI* settings);
-        void saveSettings(INI* settings);
 
     public slots:
         int exec();
+        void loadSettings();
+        void saveSettings();
 
     protected slots:
         void saveTexture();

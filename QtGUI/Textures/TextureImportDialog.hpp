@@ -5,7 +5,6 @@
 #include <FreeImage.h>
 #include "../../Driver_Routines/driver_levels.hpp"
 #include "../../Driver_Routines/driver_d3d.hpp"
-#include "../../INIParser.hpp"
 
 class TextureImportDialog : public QDialog
 {
@@ -22,10 +21,12 @@ class TextureImportDialog : public QDialog
         void setTextureIndex(int idx);
         void setPaletteIndex(int idx);
 
-        void loadSettings(INI* settings);
-        void saveSettings(INI* settings);
 
         void connectChangeHandler(QWidget* handler);
+
+    public slots:
+        void loadSettings();
+        void saveSettings();
 
     protected slots:
         void selectDefault();

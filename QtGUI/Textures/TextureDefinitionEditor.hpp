@@ -4,7 +4,6 @@
 #include <QtGUI>
 #include <QtOpengl>
 #include "../../Driver_Routines/driver_levels.hpp"
-#include "../../iniparser.hpp"
 #include "../EventFilters.hpp"
 #include "../TextureList.hpp"
 
@@ -17,7 +16,6 @@ class TextureDefinitionList : public QAbstractTableModel, IDriverLevelEvents
         ~TextureDefinitionList();
         void setLevel(DriverLevel* lev);
         void levelDestroyed();
-        void getSettings(INI* settings);
 
         int rowCount(const QModelIndex &parent = QModelIndex()) const;
         int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -33,6 +31,7 @@ class TextureDefinitionList : public QAbstractTableModel, IDriverLevelEvents
 
     public slots:
         void resetList();
+        void loadSettings();
 
     protected:
         bool enforceValidData;
@@ -94,7 +93,6 @@ class TextureDefinitionEditor : public QWidget, IDriverTexDefEvents
         ~TextureDefinitionEditor();
         void setLevel(DriverLevel* lev);
         void setTextureProvider(TextureList* list);
-        void getSettings(INI* settings);
         OverlayedTexture* overlay();
 
         //Event handlers
@@ -104,6 +102,7 @@ class TextureDefinitionEditor : public QWidget, IDriverTexDefEvents
         void definitionChanged(int idx);
 
     public slots:
+        void loadSettings();
         void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
         void updateTexture(const QModelIndex&,const QModelIndex&);
         void doViewContext(const QPoint& point);

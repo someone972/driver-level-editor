@@ -227,6 +227,8 @@ ModelView::ModelView(QWidget * parent, const QGLWidget * shareWidget, Qt::Window
     level = NULL;
     textures = NULL;
     render = NULL;
+    matrixHandler = NULL;
+    shaders = NULL;
     dragging = false;
     modelIndex = -1;
     eventModelIndex = -1;

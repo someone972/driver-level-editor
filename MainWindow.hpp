@@ -22,7 +22,6 @@
 
 #include "Log_Routines/debug_logger.hpp"
 #include "Log_Routines/default_loggers.hpp"
-#include "INIParser.hpp"
 
 class MainWindow : public QMainWindow
 {
@@ -87,7 +86,6 @@ class MainWindow : public QMainWindow
         FileLogger mainLog;
         FileLogger importLog;
         FileLogger levelLog;
-        INI settings;
 
         bool levelHasChanged,d3dHasChanged,civCosHasChanged,playerCosHasChanged,civDentHasChanged,playerDentHasChanged,wdfHasChanged;
 

@@ -89,24 +89,26 @@ void TextureImportDialog::setPaletteIndex(int idx)
     paletteIndex = idx;
 };
 
-void TextureImportDialog::loadSettings(INI* settings)
+void TextureImportDialog::loadSettings()
 {
-    selectedFilter = settings->get_string("texture_import_dialog","selected_filter",NULL);
+    QSettings settings;
+    selectedFilter = settings.value("TextureImportDialog/selectedFilter").toString();
 
-    lastNon32BitState = settings->get_int("texture_import_dialog","use_magic_pink",0);
-    prefered32BitState = settings->get_int("texture_import_dialog","prefered_32_bit",2);
+    lastNon32BitState = settings.value("TextureImportDialog/useMagicPink",0).toInt();
+    prefered32BitState = settings.value("TextureImportDialog/preferred32Bit",2).toInt();
 
-    lastImageImportDir = settings->get_string("directories", "last_image_import_dir", NULL);
+    lastImageImportDir = settings.value("directories/lastImageImportDir").toString();
 };
 
-void TextureImportDialog::saveSettings(INI* settings)
+void TextureImportDialog::saveSettings()
 {
-    settings->set_string("texture_import_dialog","selected_filter",selectedFilter.toLocal8Bit().data());
+    QSettings settings;
+    settings.setValue("TextureImportDialog/selectedFilter", selectedFilter);
 
-    settings->set_int("texture_import_dialog","use_magic_pink",lastNon32BitState);
-    settings->set_int("texture_import_dialog","prefered_32_bit",prefered32BitState);
+    settings.setValue("TextureImportDialog/useMagicPink", lastNon32BitState);
+    settings.setValue("TextureImportDialog/preferred32Bit", prefered32BitState);
 
-    settings->set_string("directories", "last_image_import_dir", lastImageImportDir.toLocal8Bit().data());
+    settings.setValue("directories/lastImageImportDir", lastImageImportDir);
 };
 
 int TextureImportDialog::exec()

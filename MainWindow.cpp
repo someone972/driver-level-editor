@@ -15,6 +15,11 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message)
 
 MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
 {
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QCoreApplication::setOrganizationName("TEMP_ORG"); //TODO: Add a proper organization name.
+    QCoreApplication::setOrganizationDomain("TEMP_ORG.com");
+    QCoreApplication::setApplicationName("Driver Level Editor");
+
     levelHasChanged = false;
     d3dHasChanged = false;
     civCosHasChanged = false;
@@ -114,44 +119,47 @@ MainWindow::~MainWindow()
 void MainWindow::loadSettings()
 {
     mainLog.Log("Loading settings...");
-    if(settings.load_ini("settings.ini") != 0)
-    mainLog.Log("WARNING: Failed to open settings file! Default settings will be used.");
-    else mainLog.Log("Settings loaded successfully.");
+    QSettings settings;
+    if(settings.allKeys().size() == 0)
+    {
+        mainLog.Log("Settings is empty. Default values will be used.");
+    }
+    else mainLog.Log("Loading settings from %s.", settings.fileName().toLocal8Bit().data());
 
-    mainLog.setLogPriority(settings.get_int("log_levels","main_log",DEFAULT_PRIORITY));
-    levelLog.setLogPriority(settings.get_int("log_levels","level_log",DEFAULT_PRIORITY));
+    mainLog.setLogPriority(settings.value("LoggingLevels/mainLog",DEFAULT_PRIORITY).toInt());
+    levelLog.setLogPriority(settings.value("LoggingLevels/levelLog",DEFAULT_PRIORITY).toInt());
     int levelPriorities[NUMBER_OF_BLOCKS];
 
-    levelPriorities[BLOCK_TEXTURES] = settings.get_int("log_levels","block_textures",levelLog.getLogPriority());
-    levelPriorities[BLOCK_MODELS] = settings.get_int("log_levels","block_models",levelLog.getLogPriority());
-    levelPriorities[BLOCK_WORLD] = settings.get_int("log_levels","block_world",levelLog.getLogPriority());
-    levelPriorities[BLOCK_RANDOM_MODEL_PLACEMENT] = settings.get_int("log_levels","block_random_model_placement",levelLog.getLogPriority());
-    levelPriorities[BLOCK_TEXTURE_DEFINITIONS] = settings.get_int("log_levels","block_texture_definitions",levelLog.getLogPriority());
-    levelPriorities[BLOCK_ROAD_TABLE] = settings.get_int("log_levels","block_road_table",levelLog.getLogPriority());
-    levelPriorities[BLOCK_ROAD_CONNECTIONS] = settings.get_int("log_levels","block_road_connections",levelLog.getLogPriority());
-    levelPriorities[BLOCK_INTERSECTIONS] = settings.get_int("log_levels","block_intersections",levelLog.getLogPriority());
-    levelPriorities[BLOCK_HEIGHTMAP_TILES] = settings.get_int("log_levels","block_heightmap_tiles",levelLog.getLogPriority());
-    levelPriorities[BLOCK_HEIGHTMAP] = settings.get_int("log_levels","block_heightmap",levelLog.getLogPriority());
-    levelPriorities[BLOCK_MODEL_NAMES] = settings.get_int("log_levels","block_model_names",levelLog.getLogPriority());
-    levelPriorities[BLOCK_EVENT_MODELS] = settings.get_int("log_levels","block_event_models",levelLog.getLogPriority());
-    levelPriorities[BLOCK_VISIBILITY] = settings.get_int("log_levels","block_visibility",levelLog.getLogPriority());
-    levelPriorities[BLOCK_SECTOR_TEXTURE_USAGE] = settings.get_int("log_levels","block_sector_texture_usage",levelLog.getLogPriority());
-    levelPriorities[BLOCK_ROAD_SECTIONS] = settings.get_int("log_levels","block_road_sections",levelLog.getLogPriority());
-    levelPriorities[BLOCK_INTERSECTION_POSITIONS] = settings.get_int("log_levels","block_intersection_positions",levelLog.getLogPriority());
-    levelPriorities[BLOCK_LAMPS] = settings.get_int("log_levels","block_lamps",levelLog.getLogPriority());
-    levelPriorities[BLOCK_CHAIR_PLACEMENT] = settings.get_int("log_levels","block_chair_placement",levelLog.getLogPriority());
+    levelPriorities[BLOCK_TEXTURES] = settings.value("LoggingLevels/blockTextures",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_MODELS] = settings.value("LoggingLevels/blockModels",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_WORLD] = settings.value("LoggingLevels/blockWorld",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_RANDOM_MODEL_PLACEMENT] = settings.value("LoggingLevels/blockRandomModelPlacement",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_TEXTURE_DEFINITIONS] = settings.value("LoggingLevels/blockTextureDefinitions",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_ROAD_TABLE] = settings.value("LoggingLevels/blockRoadTable",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_ROAD_CONNECTIONS] = settings.value("LoggingLevels/blockRoadConnections",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_INTERSECTIONS] = settings.value("LoggingLevels/blockIntersections",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_HEIGHTMAP_TILES] = settings.value("LoggingLevels/blockHeightmapTiles",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_HEIGHTMAP] = settings.value("LoggingLevels/blockHeightmap",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_MODEL_NAMES] = settings.value("LoggingLevels/blockModelNames",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_EVENT_MODELS] = settings.value("LoggingLevels/blockEventModels",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_VISIBILITY] = settings.value("LoggingLevels/blockVisibility",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_SECTOR_TEXTURE_USAGE] = settings.value("LoggingLevels/blockSectorTextureUsage",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_ROAD_SECTIONS] = settings.value("LoggingLevels/blockRoadSections",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_INTERSECTION_POSITIONS] = settings.value("LoggingLevels/blockIntersectionPositions",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_LAMPS] = settings.value("LoggingLevels/blockLamps",levelLog.getLogPriority()).toInt();
+    levelPriorities[BLOCK_CHAIR_PLACEMENT] = settings.value("LoggingLevels/blockChairPlacement",levelLog.getLogPriority()).toInt();
     level.setLogPriorities(levelPriorities);
 
-    resize(settings.get_int("main_window","width",800),settings.get_int("main_window","height",600));
-    move(settings.get_int("main_window","x",QApplication::desktop()->width()/2-frameSize().width()/2),settings.get_int("main_window","y",QApplication::desktop()->height()/2-frameSize().height()/2));
-    if(settings.get_bool("main_window","maximized",false))
+    resize(settings.value("MainWindow/size",QSize(800,600)).toSize());
+    move(settings.value("MainWindow/pos", QPoint(QApplication::desktop()->width()/2-frameSize().width()/2,QApplication::desktop()->height()/2-frameSize().height()/2)).toPoint());
+    if(settings.value("MainWindow/maximized",false).toBool())
     showMaximized();
     else showNormal();
     show();
 
-    customLevelDialog->setLastDirectory(settings.get_string("directories","lastOpenFileDir","C:\\Program Files\\GT Interactive\\Driver\\Levels"));
+    customLevelDialog->setLastDirectory(settings.value("directories/lastOpenFileDir","C:\\Program Files\\GT Interactive\\Driver\\Levels").toString());
 
-    if(settings.get_bool(NULL,"firstRun",true))
+    if(settings.value("firstRun",true).toBool())
     {
         int ret = QMessageBox::No;
         QMessageBox msgBox(centralWindow);
@@ -165,34 +173,32 @@ void MainWindow::loadSettings()
             QString newRootDir = QFileDialog::getExistingDirectory(centralWindow,tr("Choose the root Driver directory."),"C:\\Program Files\\GT Interactive\\Driver");
             if(!newRootDir.isEmpty())
             {
-                settings.set_string("directories","rootDir",newRootDir.toLocal8Bit().data());
+                settings.setValue("directories/rootDir",newRootDir);
             }
         }
     }
 
-    rootDir = settings.get_string("directories","rootDir",NULL);
+    rootDir = settings.value("directories/rootDir").toString();
 
     if(!rootDir.isEmpty())
     setConvenienceActionsEnabled(true);
 
-    textureBrowser->loadSettings(&settings);
+    textureBrowser->loadSettings();
+    mainLog.Log("Finished loading settings.");
 };
 
 void MainWindow::saveSettings()
 {
-    settings.set_bool(NULL,"firstRun",false);
-    settings.set_string("directories","rootDir",rootDir.toLocal8Bit().data());
+    QSettings settings;
+    settings.setValue("firstRun",false);
+    settings.setValue("directories/rootDir",rootDir);
 
-    settings.set_bool("main_window","maximized",isMaximized());
+    settings.setValue("MainWindow/maximized",isMaximized());
     showNormal();
-    settings.set_int("main_window","width",width());
-    settings.set_int("main_window","height",height());
-    settings.set_int("main_window","x",pos().x());
-    settings.set_int("main_window","y",pos().y());
+    settings.setValue("MainWindow/size",size());
+    settings.setValue("MainWindow/pos",pos());
 
-    textureBrowser->saveSettings(&settings);
-
-    settings.save_ini("settings.ini");
+    textureBrowser->saveSettings();
 };
 
 void MainWindow::createActions()

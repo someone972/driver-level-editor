@@ -41,7 +41,6 @@ PRECOMPILED_HEADER =
 
 HEADERS = \
     vector.hpp \
-    INIParser.hpp \
     EventMgr.hpp \
     Log_Routines/debug_logger.hpp \
     Log_Routines/default_loggers.hpp \
@@ -79,7 +78,6 @@ HEADERS = \
 	MainWindow.hpp
 SOURCES = \
     vector.cpp \
-    INIParser.cpp \
     Log_Routines/debug_logger.cpp \
     Log_Routines/default_loggers.cpp \
     Driver_Routines/DriverLevels/chairs.cpp \

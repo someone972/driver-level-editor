@@ -5,6 +5,7 @@ TextureDefinitionList::TextureDefinitionList(DriverLevel* lev,QObject* parent) :
     level = lev;
     enforceValidData = true;
     resortOnChange = true;
+    loadSettings();
 };
 
 TextureDefinitionList::~TextureDefinitionList()
@@ -31,13 +32,11 @@ void TextureDefinitionList::levelDestroyed()
     endResetModel();
 };
 
-void TextureDefinitionList::getSettings(INI* settings)
+void TextureDefinitionList::loadSettings()
 {
-    if(settings)
-    {
-        enforceValidData = settings->get_bool("texture_name_list","enforceValidData",true);
-        resortOnChange = settings->get_bool("texture_name_list","resortOnChange",true);
-    }
+    QSettings settings;
+    enforceValidData = settings.value("TextureDefinitions/enforceValidData", true).toBool();
+    resortOnChange = settings.value("TextureDefinitions/resortOnChange", true).toBool();
 };
 
 int TextureDefinitionList::rowCount(const QModelIndex &/*parent*/) const
@@ -721,6 +720,8 @@ TextureDefinitionEditor::TextureDefinitionEditor(QWidget* parent,const QGLWidget
     texDefsView->installEventFilter(keyFilter);
     texDefsView->setItemDelegate(filterDelegate);
 
+    loadSettings();
+
     connect(deleteAction, SIGNAL(triggered()), this, SLOT(deletePositionEntry()));
     connect(insertAction, SIGNAL(triggered()), this, SLOT(insertPositionEntry()));
     connect(overlayedTex, SIGNAL(overlayRectChanged(int,int,int,int)),this, SLOT(positionChanged(int,int,int,int)));
@@ -784,11 +785,11 @@ void TextureDefinitionEditor::insertPositionEntry()
     }
 };
 
-void TextureDefinitionEditor::getSettings(INI* settings)
+void TextureDefinitionEditor::loadSettings()
 {
-    texDefsModel->getSettings(settings);
-    keyFilter->setUpperFilterEnabled(!settings->get_bool("texture_names","allow_lowercase",false));
-    keyFilter->setSpaceFilterEnabled(!settings->get_bool("texture_names","allow_spaces",false));
+    QSettings settings;
+    keyFilter->setUpperFilterEnabled(!settings.value("TextureDefinitions/allowLowercase",false).toBool());
+    keyFilter->setSpaceFilterEnabled(!settings.value("TextureDefinitions/allowSpaces",false).toBool());
 };
 
 void TextureDefinitionEditor::updateTexture(const QModelIndex& index1,const QModelIndex& index2)

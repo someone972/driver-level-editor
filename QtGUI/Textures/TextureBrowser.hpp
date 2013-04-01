@@ -50,8 +50,6 @@ class TextureBrowser : public QWidget, IDriverTextureEvents, IDriverLevelEvents
         void setLevel(DriverLevel* lev);
         void setD3D(DriverD3D* newd3d);
         void setupEditMenu(QMenu* editMenu);
-        void loadSettings(INI* settings);
-        void saveSettings(INI* settings);
 
         //Event handlers
         void textureRemoved(int idx);
@@ -65,6 +63,8 @@ class TextureBrowser : public QWidget, IDriverTextureEvents, IDriverLevelEvents
     public slots:
         void texturesChanged();
         void setTextureSize(int idx);
+        void loadSettings();
+        void saveSettings();
 
     protected slots:
         void syncTextureSelection(int s);
