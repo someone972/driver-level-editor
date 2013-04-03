@@ -6,6 +6,8 @@
 #include "../../Driver_Routines/driver_levels.hpp"
 #include "../../Driver_Routines/driver_d3d.hpp"
 
+//TODO: Implement definitions exporting/importing.
+
 class FreeImageMemFile
 {
     public:
@@ -50,7 +52,7 @@ class TextureExportDialog : public QDialog
         ~TextureExportDialog();
         void setTextureIndex(int idx);
         void setPaletteIndex(int idx);
-        void setTextureData(DriverTextures* texs);
+        void setLevel(DriverLevel* lev);
         void setD3D(DriverD3D* newD3D);
 
     public slots:
@@ -100,7 +102,7 @@ class TextureExportDialog : public QDialog
         void disableTransparencyItems();
         void enableTransparencyItems();
 
-        DriverTextures* textureBlock;
+        DriverLevel* level;
         DriverD3D* d3d;
 
         int textureIndex;

@@ -138,6 +138,60 @@ void MainWindow::loadSettings()
     }
     else mainLog.Log("Loading settings from %s.", settings.fileName().toLocal8Bit().data());
 
+
+    QPoint defaultPosition;
+    QSize defaultSize(1900,1900);
+    if(!settings.contains("MainWindow/size") || !settings.contains("MainWindow/pos"))
+    {
+        int frameWidth = 0;
+        int frameTop = 0;
+        int frameBottom = 0;
+        bool screenHack = true; //If we want to get frame geometry (which is apparently a pain in qt).
+        if(screenHack)
+        {
+            //The following from a post on stackoverflow by TonyK
+            // BIG PAIN: We want to get the dialog box to caluclate its own size. But there is
+            // no simple way to do this. The following seems to work, but only if processEvents
+            // is called at least twice. God knows why:
+            setAttribute (Qt::WA_DontShowOnScreen, true) ; // Prevent screen flicker
+            show() ;
+
+            QEventLoop EventLoop (this) ;
+            for (int i = 0 ; i < 10 ; i++)
+              if (!EventLoop.processEvents()) break ;
+
+            hide() ;
+            setAttribute (Qt::WA_DontShowOnScreen, false) ;
+            frameWidth = frameGeometry().width()-geometry().width();
+            frameTop = abs(geometry().top()-frameGeometry().top());
+            frameBottom = abs(frameGeometry().bottom()-geometry().bottom());
+        }
+
+        //Ensure sane positioning for first run (i.e. not split across multiple monitors
+        QDesktopWidget* desk = QApplication::desktop();
+        int usedScreen = 0;
+        const QRect available = desk->availableGeometry(usedScreen);
+        if((available.x()+available.width())/2 >= defaultSize.width()/2+frameWidth/2)
+        {
+            defaultPosition.setX((available.x()+available.width())/2-(defaultSize.width()/2+frameWidth/2));
+        }
+        else
+        {
+            defaultPosition.setX(available.x());
+            defaultSize.setWidth(available.width()-frameWidth);
+        }
+        if((available.y()+available.height())/2 >= defaultSize.height()/2 + (frameTop+frameBottom)/2)
+        {
+            defaultPosition.setY((available.y()+available.height())/2-defaultSize.height()/2);
+        }
+        else
+        {
+            defaultPosition.setY(available.y());
+            defaultSize.setHeight(available.height()-(frameTop+frameBottom));
+        }
+        mainLog.Log("Positioning window at (%d, %d) with size (%d, %d) on screen %d/%d",defaultPosition.x(),defaultPosition.y(),defaultSize.width(),defaultSize.height(),usedScreen,desk->screenCount());
+    }
+
     mainLog.setLogPriority(settings.value("LoggingLevels/mainLog",DEFAULT_PRIORITY).toInt());
     levelLog.setLogPriority(settings.value("LoggingLevels/levelLog",DEFAULT_PRIORITY).toInt());
     int levelPriorities[NUMBER_OF_BLOCKS];
@@ -162,8 +216,8 @@ void MainWindow::loadSettings()
     levelPriorities[BLOCK_CHAIR_PLACEMENT] = settings.value("LoggingLevels/blockChairPlacement",levelLog.getLogPriority()).toInt();
     level.setLogPriorities(levelPriorities);
 
-    resize(settings.value("MainWindow/size",QSize(800,600)).toSize());
-    move(settings.value("MainWindow/pos", QPoint(QApplication::desktop()->width()/2-frameSize().width()/2,QApplication::desktop()->height()/2-frameSize().height()/2)).toPoint());
+    resize(settings.value("MainWindow/size",defaultSize).toSize());
+    move(settings.value("MainWindow/pos", defaultPosition).toPoint());
     if(settings.value("MainWindow/maximized",false).toBool())
     showMaximized();
     else showNormal();
@@ -732,6 +786,7 @@ int MainWindow::copyFile(QString from,QString to)
 
 void MainWindow::installPatch()
 {
+    //NITPICK: Fix all brackets to face same direction in filenames.
     int ret = QMessageBox::No;
     QString directory;
     if(!rootDir.isEmpty())

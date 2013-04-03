@@ -211,7 +211,7 @@ TextureBrowser::~TextureBrowser()
         level->unregisterEventHandler(this);
         level->textures.unregisterEventHandler(this);
         display->setTextureData(NULL);
-        exportDialog->setTextureData(NULL);
+        exportDialog->setLevel(NULL);
         importDialog->setTextureData(NULL);
         addPaletteDialog->setTextureData(NULL);
         texturesChanged();
@@ -411,6 +411,7 @@ void TextureBrowser::texturesChanged()
 
 void TextureBrowser::refreshIndexList()
 {
+    cout<<"REFRESH"<<endl;
     if(level)
     {
         if(level->textures.getNumTextures() < indexList->count())
@@ -444,7 +445,7 @@ void TextureBrowser::setLevel(DriverLevel* lev)
     textures = &level->textures;
 
     display->setTextureData(textures);
-    exportDialog->setTextureData(textures);
+    exportDialog->setLevel(level);
     importDialog->setTextureData(textures);
     addPaletteDialog->setTextureData(textures);
     texturesChanged();
@@ -1127,7 +1128,7 @@ void TextureBrowser::levelDestroyed()
 {
     level = NULL;
     display->setTextureData(NULL);
-    exportDialog->setTextureData(NULL);
+    exportDialog->setLevel(NULL);
     importDialog->setTextureData(NULL);
     addPaletteDialog->setTextureData(NULL);
     texturesChanged();
@@ -1137,4 +1138,5 @@ void TextureBrowser::levelOpened()
 {
     const DriverTexture* tex = level->textures.getTexture(0);
     textureProperties->setTextureProperties(tex);
+    refreshIndexList();
 };

@@ -58,6 +58,8 @@ class EventModelList : public QAbstractTableModel
 
 class ModelView : public QGLWidget
 {
+    //TODO: Better camera control (right click zoom, sensitivity etc)
+    //TODO: Set event models to render
     Q_OBJECT
 
     public:

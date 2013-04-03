@@ -138,7 +138,6 @@
 		<Unit filename="QtGUI/Textures/TexturePropertiesWidget.hpp" />
 		<Unit filename="QtGUI/Textures/TextureView.cpp" />
 		<Unit filename="QtGUI/Textures/TextureView.hpp" />
-		<Unit filename="ini_options.txt" />
 		<Unit filename="main.cpp" />
 		<Unit filename="vector.cpp" />
 		<Unit filename="vector.hpp" />

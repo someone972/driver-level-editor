@@ -254,13 +254,7 @@ void ModelView::setLevel(DriverLevel* lev)
     level = lev;
     if(level)
     {
-        if(level->models.getNumModels() > 0)
-        {
-            if(render)
-            render->buildRenderData(level->models.getModel(90), level->models.getReferencedModel(level->models.getModel(90)));
-            updateGL();
-        cout<<"YOLO"<<endl;
-        }
+
     }
 };
 
@@ -276,7 +270,7 @@ void ModelView::setModelIndex(int idx)
             {
                 const DriverModel* referencedModel = level->models.getReferencedModel(model);
                 Vector3f center = referencedModel->getCenter();
-                camera.setPosition(center.x, center.y, center.z);
+                camera.setPosition(-center.x, -center.y, -center.z);
                 camera.setDistance(referencedModel->getBoundingSphereRadius()*3.0f);
                 render->buildRenderData(model, referencedModel);
             }
@@ -358,7 +352,6 @@ void ModelView::paintGL()
     {
         for(int i = 0; i < render->getNumGroups(); i++)
         {
-            cout<<i<<" "<<render->getTextureUsed(i)<<endl;
             if(render->getTextureUsed(i) == -1)
             {
                 glDisable(GL_TEXTURE_2D);
@@ -578,6 +571,7 @@ ModelViewPanel::ModelViewPanel(QWidget * parent, const QGLWidget * shareWidget, 
     eventNamesList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     tabs = new QTabWidget(this);
+    tabs->setMaximumWidth(200);
     tabs->addTab(namesList,tr("&Models"));
     tabs->addTab(eventNamesList,tr("&Event Models"));
 

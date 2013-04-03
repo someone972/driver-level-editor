@@ -143,7 +143,7 @@ void FreeImageMemFile::reset()
 
 TextureExportDialog::TextureExportDialog(QWidget* parent) : QDialog(parent)
 {
-    textureBlock = NULL;
+    level = NULL;
     d3d = NULL;
 
     textureIndex = -1;
@@ -398,9 +398,9 @@ void TextureExportDialog::enableTransparencyItems()
     transEnabled = true;
 };
 
-void TextureExportDialog::setTextureData(DriverTextures* texs)
+void TextureExportDialog::setLevel(DriverLevel* lev)
 {
-    textureBlock = texs;
+    level = lev;
 };
 
 void TextureExportDialog::setD3D(DriverD3D* newD3D)
@@ -652,7 +652,6 @@ void TextureExportDialog::saveTexture()
                 break;
         }
         success = FreeImage_Save(FIF_TIFF, cachedBitmap, filename.toLocal8Bit().data(), compression);
-
     }
     else if(selectedFilter == targaFilter)
     {
@@ -674,10 +673,10 @@ void TextureExportDialog::saveTexture()
 
 void TextureExportDialog::prepareFreeImageBitmap()
 {
-    if(textureBlock)
+    if(level)
     {
         disableTransparencyItems();
-        const DriverTexture* tex = textureBlock->getTexture(textureIndex);
+        const DriverTexture* tex = level->textures.getTexture(textureIndex);
         if(tex)
         {
             if(tex->usesPalette())
@@ -714,7 +713,7 @@ void TextureExportDialog::prepareFreeImageBitmap()
 
                 DriverPalette* paletteData = NULL;
                 if(palette != -1)
-                paletteData = textureBlock->getIndexedPalette(palette);
+                paletteData = level->textures.getIndexedPalette(palette);
 
                 if(paletteData)
                 {
@@ -1354,4 +1353,3 @@ void TextureExportDialog::forceTgaUpdate()
     selectTgaTruecolor32();
     else selectTgaPaletted();
 };
-

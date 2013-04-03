@@ -86,6 +86,7 @@ class OverlayedTexture : public QGLWidget
 
 class TextureDefinitionEditor : public QWidget, IDriverTexDefEvents
 {
+    //TODO: Settings for setting zoom or max size.
     Q_OBJECT
 
     public:

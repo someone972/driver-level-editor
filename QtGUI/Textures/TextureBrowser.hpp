@@ -40,6 +40,8 @@ class NewTextureDialog : public QDialog
 
 class TextureBrowser : public QWidget, IDriverTextureEvents, IDriverLevelEvents
 {
+    //TODO: Refresh GL view on level change etc
+    //TODO: Add bigger version on double click
     Q_OBJECT
 
     public:
