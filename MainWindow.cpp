@@ -140,7 +140,7 @@ void MainWindow::loadSettings()
 
 
     QPoint defaultPosition;
-    QSize defaultSize(1900,1900);
+    QSize defaultSize(800,600);
     if(!settings.contains("MainWindow/size") || !settings.contains("MainWindow/pos"))
     {
         int frameWidth = 0;
@@ -150,6 +150,7 @@ void MainWindow::loadSettings()
         if(screenHack)
         {
             //The following from a post on stackoverflow by TonyK
+
             // BIG PAIN: We want to get the dialog box to caluclate its own size. But there is
             // no simple way to do this. The following seems to work, but only if processEvents
             // is called at least twice. God knows why:
@@ -162,6 +163,8 @@ void MainWindow::loadSettings()
 
             hide() ;
             setAttribute (Qt::WA_DontShowOnScreen, false) ;
+            //End code section from TonyK
+
             frameWidth = frameGeometry().width()-geometry().width();
             frameTop = abs(geometry().top()-frameGeometry().top());
             frameBottom = abs(frameGeometry().bottom()-geometry().bottom());
