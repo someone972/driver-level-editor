@@ -856,6 +856,7 @@ void TextureDefinitionEditor::definitionsReset(bool aboutToBe)
 void TextureDefinitionEditor::definitionsOpened()
 {
     texDefsModel->resetList();
+    texDefsView->selectionModel()->setCurrentIndex(texDefsModel->index(0,0),QItemSelectionModel::Select);
 };
 
 void TextureDefinitionEditor::definitionChanged(int idx)

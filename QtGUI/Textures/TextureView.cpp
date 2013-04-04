@@ -119,6 +119,7 @@ void TextureViewGL::setup()
     viewMode = 0;
     selectedTexture = -1;
     selectedPalette = -1;
+    selectedPositioner = -1;
     heldPositioner = -1;
     lastTransition = 0;
     xDisplacement = 0;
@@ -137,6 +138,8 @@ void TextureViewGL::setup()
         textureHidden[i] = false;
         textureColors[i] = -1;
     }
+
+    setFocusPolicy(Qt::ClickFocus);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(checkTimer()));
@@ -209,7 +212,7 @@ void TextureViewGL::drawPositioner(int i, int currentTime)
     drawTexture(texturePositions[i].getXPosition(currentTime),texturePositions[i].getYPosition(currentTime),
                 textureList->getTexture(texturePositions[i].getTextureIndex(),(texturePositions[i].getPaletteIndex() == -1 ? textureList->getCurrentPalette(texturePositions[i].getTextureIndex()) : texturePositions[i].getPaletteIndex())));
 
-    if(texturePositions[i].getTextureIndex() == selectedTexture && (texturePositions[i].getPaletteIndex() == selectedPalette || texturePositions[i].getPaletteIndex() == -1))
+    if(i == selectedPositioner)
     {
         drawHighlight(texturePositions[i].getXPosition(currentTime),texturePositions[i].getYPosition(currentTime),0,0,255);
     }
@@ -445,6 +448,7 @@ void TextureViewGL::mousePressEvent(QMouseEvent* event)
                             emit paletteSelectionChanged(selectedPalette);
                             update();
                         }
+                        findSelectedPositioner();
                         break;
                     }
                 }
@@ -547,6 +551,86 @@ void TextureViewGL::resizeEvent(QResizeEvent* event)
     QGLWidget::resizeEvent(event);
 };
 
+void TextureViewGL::keyPressEvent(QKeyEvent* event)
+{
+        cout<<event->key()<<endl;
+    if(!(event->modifiers() & Qt::ControlModifier))
+    {
+        int gridX = 0;
+        int gridY = 0;
+        int numWide = (width()-10)/(textureSize+10);
+        if(selectedPositioner != -1)
+        {
+            gridX = texturePositions[selectedPositioner].getGridX();
+            gridY = texturePositions[selectedPositioner].getGridY();
+
+            bool press = false;
+            switch(event->key())
+            {
+                case Qt::Key_Up:
+                    gridY--;
+                    press = true;
+                    break;
+                case Qt::Key_Down:
+                    gridY++;
+                    press = true;
+                    break;
+                case Qt::Key_Left:
+                    gridX--;
+                    if(gridX < 0)
+                    {
+                        gridY--;
+                        gridX = numWide-1;
+                    }
+                    press = true;
+                    break;
+                case Qt::Key_Right:
+                    gridX++;
+                    if(gridX >= numWide)
+                    {
+                        gridY++;
+                        gridX = 0;
+                    }
+                    press = true;
+                    break;
+            }
+            if(!press)
+                return;
+
+            int found = -1;
+            for(unsigned int i = 0; i < texturePositions.size(); i++)
+            {
+                if(texturePositions[i].getGridX() == gridX && texturePositions[i].getGridY() == gridY)
+                {
+                    found = i;
+                    break;
+                }
+            }
+            if(found != -1)
+            {
+                selectedPositioner = found;
+                if(texturePositions[found].getTextureIndex() != selectedTexture)
+                {
+                    selectedTexture = texturePositions[found].getTextureIndex();
+                    update();
+                    emit textureSelectionChanged(selectedTexture);
+                }
+                if(texturePositions[found].getPaletteIndex() != selectedPalette && texturePositions[found].getPaletteIndex() != -1)
+                {
+                    selectedPalette = texturePositions[found].getPaletteIndex();
+                    update();
+                    emit paletteSelectionChanged(selectedPalette);
+                }
+            }
+        }
+    }
+};
+
+void TextureViewGL::keyReleaseEvent(QKeyEvent* event)
+{
+    cout<<event->key()<<endl;
+};
+
 void TextureViewGL::setTextureData(DriverTextures* newTexData)
 {
     textures = newTexData;
@@ -571,6 +655,19 @@ int TextureViewGL::getVerticalScrollStep()
 int TextureViewGL::getMilliseconds()
 {
     return timeKeeper.elapsed();
+};
+
+void TextureViewGL::findSelectedPositioner()
+{
+    selectedPositioner = -1;
+    for(unsigned int i = 0; i < texturePositions.size(); i++)
+    {
+        if(texturePositions[i].getTextureIndex() == selectedTexture && (texturePositions[i].getPaletteIndex() == selectedPalette || texturePositions[i].getPaletteIndex() == -1))
+        {
+            selectedPositioner = i;
+            break;
+        }
+    }
 };
 
 void TextureViewGL::rebuildView()
@@ -674,6 +771,7 @@ void TextureViewGL::rebuildView()
     {
         texturePositions.pop_back();
     }
+    findSelectedPositioner();
     emit sizeHasChanged();
 };
 
@@ -736,12 +834,14 @@ void TextureViewGL::setDisplacement(int x, int y)
 void TextureViewGL::setSelectedTexture(int idx)
 {
     selectedTexture = idx;
+    findSelectedPositioner();
     update();
 };
 
 void TextureViewGL::setSelectedPalette(int idx)
 {
     selectedPalette = idx;
+    findSelectedPositioner();
     update();
 };
 
@@ -837,6 +937,7 @@ void TextureView::setup()
     glView->show();
     glView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    setFocusPolicy(Qt::WheelFocus);
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(glView);
     layout->setContentsMargins(0,0,0,0);

@@ -83,10 +83,13 @@ class TextureViewGL : public QGLWidget
         void initializeGL();
         void resizeGL(int width, int height);
         void paintGL();
+        void findSelectedPositioner();
         void drawPositioner(int i, int currentTime);
         void mousePressEvent(QMouseEvent* event);
         void mouseReleaseEvent(QMouseEvent* event);
         void mouseMoveEvent(QMouseEvent* event);
+        void keyPressEvent(QKeyEvent* event);
+        void keyReleaseEvent(QKeyEvent* event);
         void resizeEvent(QResizeEvent* event);
 
         void drawTexture(int x, int y, GLuint texture);
@@ -97,6 +100,7 @@ class TextureViewGL : public QGLWidget
         int textureSize;
         int viewMode;
         int selectedTexture, selectedPalette;
+        int selectedPositioner;
         int heldPositioner;
         int heldPositionX;
         int heldPositionY;

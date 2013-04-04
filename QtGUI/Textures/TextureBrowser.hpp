@@ -93,6 +93,7 @@ class TextureBrowser : public QWidget, IDriverTextureEvents, IDriverLevelEvents
         void insertTexture(int idx, const DriverTexture* tex);
         void hideEvent(QHideEvent* event);
         void showEvent(QShowEvent* event);
+        bool eventFilter(QObject* obj, QEvent* event);
         void hideMenuActions();
         void showMenuActions();
         void checkForPairs();
@@ -106,6 +107,7 @@ class TextureBrowser : public QWidget, IDriverTextureEvents, IDriverLevelEvents
 
         NewTextureDialog* newTextureDialog;
 
+        bool displayControl;
         TextureView* display;
         QHBoxLayout* mainLayout;
 

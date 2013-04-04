@@ -49,6 +49,10 @@ void TextureBrowser::setup()
     textureList = NULL;
     level = NULL;
 
+    display->viewer()->installEventFilter(this);
+    display->installEventFilter(this);
+    displayControl = false;
+
     newTextureDialog = new NewTextureDialog(this);
 
     pairAdvisoryWidget = new QWidget(this);
@@ -190,7 +194,7 @@ void TextureBrowser::setup()
     connect(editAddTextureAction, SIGNAL(triggered()), newTextureDialog, SLOT(exec()));
     connect(newTextureDialog, SIGNAL(newTextureRequested(unsigned short, short)), this, SLOT(addNewTexture(unsigned short, short)));
 
-    connect(textureSizeSelect, SIGNAL(activated(int)), this, SLOT( setTextureSize(int)));
+    connect(textureSizeSelect, SIGNAL(currentIndexChanged(int)), this, SLOT( setTextureSize(int)));
     connect(filterSelect, SIGNAL(activated(int)), this, SLOT( applyFilter(int)));
     connect(viewModeSelect, SIGNAL(activated(int)), display->viewer(), SLOT(setViewMode(int)));
 
@@ -323,6 +327,7 @@ void TextureBrowser::applyFilter(int idx)
 
 void TextureBrowser::syncTextureSelection(int s)
 {
+    cout<<"SYNC "<<s<<endl;
     display->setSelectedTexture(s);
     textureNumber->setValue(s);
     indexList->setCurrentItem(indexList->item(s));
@@ -466,6 +471,87 @@ void TextureBrowser::showEvent(QShowEvent* event)
 {
     if(!event->spontaneous())
     showMenuActions();
+};
+
+bool TextureBrowser::eventFilter(QObject* obj, QEvent* event)
+{
+    if(obj == display->viewer())
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if(keyEvent->key() == Qt::Key_Control)
+                displayControl = true;
+
+            if(keyEvent->modifiers() & Qt::ControlModifier)
+            {
+                switch(keyEvent->key())
+                {
+                    case Qt::Key_Up:
+                        if(textureSizeSelect->currentIndex() > 0)
+                            textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()-1);
+                        break;
+                    case Qt::Key_Down:
+                        if(textureSizeSelect->currentIndex() < textureSizeSelect->count()-1)
+                            textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()+1);
+                        break;
+                    case Qt::Key_Left:
+                        if(paletteList->currentRow() > 0)
+                        {
+                            paletteList->setCurrentRow(paletteList->currentRow()-1);
+                        }
+                        break;
+                    case Qt::Key_Right:
+                        if(paletteList->currentRow() < paletteList->count()-1)
+                        {
+                            paletteList->setCurrentRow(paletteList->currentRow()+1);
+                        }
+                        break;
+                }
+            }
+        }
+        else if (event->type() == QEvent::KeyRelease)
+        {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if(keyEvent->key() == Qt::Key_Control)
+                displayControl = false;
+        }
+        else if(event->type() == QEvent::Wheel)
+        {
+            QWheelEvent *wheelEvent = static_cast<QWheelEvent *>(event);
+            if(displayControl)
+            {
+                int numDegrees = wheelEvent->delta() / 8;
+                int numSteps = numDegrees / 15;
+
+                if(textureSizeSelect->currentIndex() > 0 && numSteps < 0)
+                    textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()-1);
+                if(textureSizeSelect->currentIndex() < textureSizeSelect->count()-1 && numSteps > 0)
+                    textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()+1);
+            }
+        }
+    }
+    else if(obj == display)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if(keyEvent->key() == Qt::Key_Control)
+                displayControl = true;
+        }
+        if (event->type() == QEvent::KeyRelease)
+        {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if(keyEvent->key() == Qt::Key_Control)
+                displayControl = false;
+        }
+        if((event->type() == QEvent::Wheel) && displayControl)
+        {
+            //TODO: Fix scroll area so it does not scroll when control is being held.
+            return true;
+        }
+    }
+    return false;
 };
 
 void TextureBrowser::hideMenuActions()
@@ -1138,5 +1224,6 @@ void TextureBrowser::levelOpened()
 {
     const DriverTexture* tex = level->textures.getTexture(0);
     textureProperties->setTextureProperties(tex);
+    textureNumber->setMaximum(level->textures.getNumTextures());
     refreshIndexList();
 };

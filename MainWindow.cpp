@@ -411,7 +411,7 @@ void MainWindow::openLevel(QString levFile,QString d3dFile,QString pcarDenFile,Q
     wheelsString = wheelFile;
 
     bool success = levelLoader->load(levFile, d3dFile, wheelFile, pcarCosFile, civcarCosFile, pcarDenFile, civcarDenFile);
-    if(success)
+    if(success && centralWindow->currentWidget() == startPage)
         centralWindow->setCurrentWidget(textureBrowser);
 
     levelTextures.rebuildAllTextures();
