@@ -13,6 +13,7 @@
 #include "Driver_Routines/driver_wdf.hpp"
 
 #include "QtGUI/AboutDialog.hpp"
+#include "QtGUI/LevelLoadingDialog.hpp"
 #include "QtGUI/CustomLevelDialog.hpp"
 #include "QtGUI/Models/DriverModelView.hpp"
 #include "QtGUI/SaveAsDialog.hpp"
@@ -35,14 +36,13 @@ class MainWindow : public QMainWindow
         void levelChanged();
 
         //Signals emitted after change has been handled.
-        void updateTexture(int);
+        void updateTexture(int); //TODO: do we need these anymore?
         void updateTextures();
         void updatePalette(int);
 
         void updateD3D();
 
     public slots:
-        void cleanupLevelData();
         void setConvenienceActionsEnabled(bool enabled);
 
         void loadCustomFiles();
@@ -93,7 +93,8 @@ class MainWindow : public QMainWindow
         LevelTextures levelTextures;
         CosmeticsContainer playerCosmetics;
         CosmeticsContainer civilianCosmetics;
-        DriverDenting denting;
+        DriverDenting playerDenting;
+        DriverDenting civilianDenting;
         DriverD3D d3d;
         DriverWheelDefinitions wheels;
 
@@ -137,6 +138,7 @@ class MainWindow : public QMainWindow
         CustomLevelDialog* customLevelDialog;
         AboutDialog* aboutDialog;
         ModelViewPanel* modelViewPanel;
+        LevelLoadingDialog* levelLoader;
         SaveAsDialog* saveDialog;
         TextureDefinitionEditor* definitionEditor;
         TextureBrowser* textureBrowser;

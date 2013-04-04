@@ -80,12 +80,12 @@ class DriverDenting
         int savePlayerDentingToFile(FILE* file);
         int savePlayerDenting(IOCallbacks* callbacks, IOHandle handle);
 
-        DentingEntry* civilianDenting(int idx);
-        DentingEntry* playerDenting(int idx);
+        int getNumEntries();
+        DentingEntry* entry(int idx);
 
     protected:
-        DentingEntry civilianEntries[11];
-        DentingEntry playerEntries[18];
+        int numEntries;
+        DentingEntry* entries;
 };
 
 #endif

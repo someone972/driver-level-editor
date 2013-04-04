@@ -108,6 +108,8 @@
 		<Unit filename="QtGUI/CustomLevelDialog.hpp" />
 		<Unit filename="QtGUI/EventFilters.cpp" />
 		<Unit filename="QtGUI/EventFilters.hpp" />
+		<Unit filename="QtGUI/LevelLoadingDialog.cpp" />
+		<Unit filename="QtGUI/LevelLoadingDialog.hpp" />
 		<Unit filename="QtGUI/Models/DriverModelView.cpp" />
 		<Unit filename="QtGUI/Models/DriverModelView.hpp" />
 		<Unit filename="QtGUI/Models/ModelProperties.cpp" />

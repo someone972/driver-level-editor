@@ -92,6 +92,16 @@ MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
     textureBrowser->setD3D(&d3d);
     connect(this, SIGNAL(levelChanged()), textureBrowser, SLOT(texturesChanged()));
 
+    levelLoader = new LevelLoadingDialog(this);
+    levelLoader->setLevel(&level);
+    levelLoader->setD3D(&d3d);
+    levelLoader->setWheelDefinitions(&wheels);
+    levelLoader->setPlayerCosmetics(&playerCosmetics);
+    levelLoader->setCivilianCosmetics(&civilianCosmetics);
+    levelLoader->setPlayerDenting(&playerDenting);
+    levelLoader->setCivilianDenting(&civilianDenting);
+    levelLoader->setLog(&mainLog);
+
     saveDialog = new SaveAsDialog(this);
     connect(saveDialog, SIGNAL(saveLevel(QString,unsigned int)), this, SLOT(saveLevel(QString,unsigned int)));
     connect(saveDialog, SIGNAL(saveD3D(QString)), this, SLOT(saveD3D(QString)));
@@ -377,33 +387,6 @@ void MainWindow::viewTextureBrowser()
     centralWindow->setCurrentWidget(textureBrowser);
 };
 
-void MainWindow::cleanupLevelData()
-{
-    mainLog.Log("Cleaning up level data...");
-    level.cleanup();
-    mainLog.Log("Level data cleaned up successfully.");
-
-    mainLog.Log("Cleaning up D3D data...");
-    d3d.cleanup();
-    mainLog.Log("D3D data cleaned up successfully.");
-
-    mainLog.Log("Cleaning up player cosmetics data...");
-    playerCosmetics.reset();
-    mainLog.Log("Player cosmetics data cleaned up successfully.");
-
-    mainLog.Log("Cleaning up civilian cosmetics data...");
-    civilianCosmetics.reset();
-    mainLog.Log("Civilian cosmetics data cleaned up successfully.");
-
-    mainLog.Log("Cleaning up denting data...");
-    denting.cleanup();
-    mainLog.Log("Denting data cleaned up successfully.");
-
-    mainLog.Log("Cleaning up wheel definition data...");
-    wheels.reset();
-    mainLog.Log("Wheel definition data cleaned up successfully.");
-};
-
 void MainWindow::setConvenienceActionsEnabled(bool enabled)
 {
     openMiami->setEnabled(enabled);
@@ -419,10 +402,6 @@ void MainWindow::setConvenienceActionsEnabled(bool enabled)
 
 void MainWindow::openLevel(QString levFile,QString d3dFile,QString pcarDenFile,QString civcarDenFile,QString pcarCosFile,QString civcarCosFile,QString wheelFile)
 {
-    int ret;
-
-    cleanupLevelData();
-
     levelString = levFile;
     d3dString = d3dFile;
     playerDenString = pcarDenFile;
@@ -431,192 +410,9 @@ void MainWindow::openLevel(QString levFile,QString d3dFile,QString pcarDenFile,Q
     civilianCosString = civcarCosFile;
     wheelsString = wheelFile;
 
-    QMessageBox msgBox(centralWindow);
-    msgBox.setIcon(QMessageBox::Warning);
-
-    if(!levelString.isEmpty())
-    {
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load level %s.",levelString.toLocal8Bit().data());
-        ret = level.loadFromFile(levelString.toLocal8Bit().data(),LEV_ALL);
-        if(ret != 0)
-        {
-            if(ret == 1)
-            {
-                msgBox.setText(tr("Failed to open level file!"));
-                mainLog.Log("ERROR: Failed to open player cosmetics file!");
-            }
-            else if(ret == 2)
-            {
-                level.cleanup();
-                msgBox.setText(tr("Level is corrupt! Could not load!"));
-                mainLog.Log("ERROR: Failed to open player cosmetics file!");
-            }
-            else
-            {
-                msgBox.setText(tr("Unknown error occurred when loading level!"));
-                mainLog.Log("ERROR: Unknown error occurred when loading player cosmetics: %d", ret);
-            }
-
-            msgBox.exec();
-            return;
-        }
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Level loaded successfully.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Level filename is empty, nothing to be done.");
-
-    if(!d3dString.isEmpty())
-    {
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load D3D %s.",d3dString.toLocal8Bit().data());
-        ret = d3d.loadFromFile(d3dString.toLocal8Bit().data());
-        if(ret < 0)
-        {
-            if(ret == -1)
-            {
-                msgBox.setText(tr("Failed to open D3D file!"));
-                mainLog.Log("ERROR: Failed to open D3D file!");
-            }
-            else if(ret == -2)
-            {
-                level.cleanup();
-                msgBox.setText(tr("D3D is corrupt! Could not load!"));
-                mainLog.Log("ERROR: D3D is corrupt!");
-            }
-            else
-            {
-                msgBox.setText(tr("Unknown error occurred when loading D3D!"));
-                mainLog.Log("ERROR: Unknown error occurred when loading D3D: %d", ret);
-            }
-
-            msgBox.exec();
-            return;
-        }
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "D3D loaded successfully.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "D3D filename is empty, nothing to be done.");
-
-    if(!playerDenString.isEmpty())
-    {
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load player denting %s.",playerDenString.toLocal8Bit().data());
-        ret = denting.loadPlayerDentingFromFile(playerDenString.toLocal8Bit().data());
-        if(ret != 0)
-        {
-            if(ret == 1)
-            {
-                msgBox.setText(tr("Failed to open player denting file!"));
-                mainLog.Log("ERROR: Failed to open player denting file!");
-            }
-            else
-            {
-                msgBox.setText(tr("Unknown error occurred when loading player denting!"));
-                mainLog.Log("ERROR: Unknown error occurred when loading player denting: %d", ret);
-            }
-
-            msgBox.exec();
-            return;
-        }
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Player denting loaded successfully.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Player denting filename is empty, nothing to be done.");
-
-    if(!civilianDenString.isEmpty())
-    {
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load civilian denting %s.",civilianDenString.toLocal8Bit().data());
-        ret = denting.loadCivilianDentingFromFile(civilianDenString.toLocal8Bit().data());
-        if(ret != 0)
-        {
-            if(ret == 1)
-            {
-                msgBox.setText(tr("Failed to open civilian denting file!"));
-                mainLog.Log("ERROR: Failed to open civilian denting file!");
-            }
-            else
-            {
-                msgBox.setText(tr("Unknown error occurred when loading civilian denting!"));
-                mainLog.Log("ERROR: Unknown error occurred when loading civilian denting: %d", ret);
-            }
-
-            msgBox.exec();
-            return;
-        }
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian denting loaded successfully.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian denting filename is empty, nothing to be done.");
-
-    if(!playerCosString.isEmpty())
-    {
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load player cosmetics %s.",playerCosString.toLocal8Bit().data());
-        ret = playerCosmetics.loadCosmeticsFromFile(playerCosString.toLocal8Bit().data());
-        if(ret < 0)
-        {
-            if(ret == -1)
-            {
-                msgBox.setText(tr("Failed to open player cosmetics file!"));
-                mainLog.Log("ERROR: Failed to open player cosmetics file!");
-            }
-            else
-            {
-                msgBox.setText(tr("Unknown error occurred when loading player cosmetics!"));
-                mainLog.Log("ERROR: Unknown error occurred when loading player cosmetics: %d", ret);
-            }
-
-            msgBox.exec();
-            return;
-        }
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Player cosmetics loaded successfully.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Player cosmetics filename is empty, nothing to be done.");
-
-    if(!civilianCosString.isEmpty())
-    {
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load civilian cosmetics %s.",civilianCosString.toLocal8Bit().data());
-        ret = civilianCosmetics.loadCosmeticsFromFile(civilianCosString.toLocal8Bit().data());
-        if(ret < 0)
-        {
-            if(ret == -1)
-            {
-                msgBox.setText(tr("Failed to open civilian cosmetics file!"));
-                mainLog.Log("ERROR: Failed to open civilian cosmetics file!");
-            }
-            else
-            {
-                msgBox.setText(tr("Unknown error occurred when loading civilian cosmetics!"));
-                mainLog.Log("ERROR: Unknown error occurred when loading civilian cosmetics: %d", ret);
-            }
-
-            msgBox.exec();
-            return;
-        }
-        mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian cosmetics loaded successfully.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Civilian cosmetics filename is empty, nothing to be done.");
-
-    if(!wheelsString.isEmpty())
-    {
-        if(QFile::exists(wheelsString))
-        {
-            mainLog.Log(DEBUG_LEVEL_NORMAL, "Preparing to load wheel definition file %s.",civilianCosString.toLocal8Bit().data());
-            ret = wheels.loadFromFile(wheelsString.toLocal8Bit().data());
-            if(ret != 0)
-            {
-                if(ret == 1)
-                {
-                    msgBox.setText(tr("Failed to open wheel definition file!"));
-                    mainLog.Log("ERROR: Failed to open wheel definition file!");
-                }
-                else
-                {
-                    msgBox.setText(tr("Unknown error occurred when loading wheel definition file!"));
-                    mainLog.Log("ERROR: Unknown error occurred when loading wheel definition file: %d", ret);
-                }
-
-                msgBox.exec();
-                return;
-            }
-            mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition file loaded successfully.");
-        }
-        else mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition file does not exist, skipping.");
-    }
-    else mainLog.Log(DEBUG_LEVEL_NORMAL, "Wheel definition filename is empty, nothing to be done.");
+    bool success = levelLoader->load(levFile, d3dFile, wheelFile, pcarCosFile, civcarCosFile, pcarDenFile, civcarDenFile);
+    if(success)
+        centralWindow->setCurrentWidget(textureBrowser);
 
     levelTextures.rebuildAllTextures();
     modelViewPanel->setLevel(&level);
@@ -1021,17 +817,12 @@ void MainWindow::savePlayerDenting(QString filename)
         return;
     }
 
-    int ret = denting.savePlayerDentingToFile(file);
+    int ret = playerDenting.savePlayerDentingToFile(file);
     fclose(file);
 
-    if(ret != 0)
+    if(ret < 0)
     {
-        switch(ret)
-        {
-            default:
-                msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
-                break;
-        }
+        msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
         msgBox.exec();
         mainLog.Log("ERROR: Player denting saving returned failure code %d.",ret);
         return;
@@ -1076,17 +867,12 @@ void MainWindow::saveCivilianDenting(QString filename)
         return;
     }
 
-    int ret = denting.saveCivilianDentingToFile(file);
+    int ret = civilianDenting.saveCivilianDentingToFile(file);
     fclose(file);
 
     if(ret != 0)
     {
-        switch(ret)
-        {
-            default:
-                msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
-                break;
-        }
+        msgBox.setInformativeText(tr("Unknown error: ")+QString::number(ret));
         msgBox.exec();
         mainLog.Log("ERROR: Civilian denting saving returned failure code %d.",ret);
         return;

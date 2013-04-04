@@ -106,11 +106,11 @@ int DriverLevel::loadFromFile(const char* filename, unsigned int openWhat)
     if(!file)
     {
         log->Log("ERROR: Failed to open file for reading.");
-        return 1;
+        return -1;
     }
     int ret = loadFromFile(file,openWhat);
     fclose(file);
-    if(ret == 2)
+    if(ret == -2)
     log->Log("ERROR: Level is corrupt!");
     return ret;
 };
@@ -131,7 +131,7 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
     if(!handle)
     {
         log->Log("ERROR: File pointer is NULL!");
-        return 1;
+        return -1;
     }
 
     start = callbacks->tell(handle);
@@ -162,7 +162,7 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
             else
             {
                 log->Log("ERROR: Size of block exceeds size of handle!");
-                return 2;
+                return -2;
             }
         }
 
@@ -432,14 +432,14 @@ int DriverLevel::load(IOHandle handle, IOCallbacks* callbacks, unsigned int open
         {
             log->Log("Block load failed. Aborting level loading!");
             cleanup();
-            return 1;
+            return -3;
         }
     }
     log->Log(DEBUG_LEVEL_NORMAL,"Level finished loading successfully!");
 
     //Send level opened event.
     eventManager.Raise(EVENT(IDriverLevelEvents::levelOpened)());
-    return 0;
+    return dataRead;
 };
 
 int DriverLevel::saveToFile(const char* filename, unsigned int saveWhat)

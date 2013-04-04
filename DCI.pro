@@ -59,6 +59,7 @@ HEADERS = \
     Driver_Routines/driver_wdf.hpp \
     Driver_Routines/ioFuncs.hpp \
     QtGUI/AboutDialog.hpp \
+    QtGUI/LevelLoadingDialog.hpp \
     QtGUI/CustomLevelDialog.hpp \
     QtGUI/SaveAsDialog.hpp \
     QtGUI/StartScreen.hpp \
@@ -95,6 +96,7 @@ SOURCES = \
     Driver_Routines/driver_wdf.cpp \
     Driver_Routines/ioFuncs.cpp \
     QtGUI/AboutDialog.cpp \
+    QtGUI/LevelLoadingDialog.cpp \
     QtGUI/CustomLevelDialog.cpp \
     QtGUI/SaveAsDialog.cpp \
     QtGUI/StartScreen.cpp \
