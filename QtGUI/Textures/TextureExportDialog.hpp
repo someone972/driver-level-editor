@@ -108,6 +108,7 @@ class TextureExportDialog : public QDialog
         int textureIndex;
         int paletteIndex;
         bool transEnabled;
+        bool addExtension;
         FIBITMAP* textureBitmap;
         FIBITMAP* cachedBitmap; //For storing a copy of the bitmap to be saved in the format to save in. (ex. jpeg saves in 24-bit)
         FreeImageMemFile previewMemFile;

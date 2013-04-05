@@ -424,6 +424,7 @@ void TextureExportDialog::loadSettings()
     selectedFilter = settings.value("TextureExportDialog/selectedFilter","").toString();
     exportDefinitions->setCheckState((settings.value("TextureExportDialog/exportDefinitions",false).toBool() ? Qt::Checked : Qt::Unchecked));
     lastImageExportDir = settings.value("directories/lastImageExportDir").toString();
+    addExtension = settings.value("TextureExportDialog/addExtension",true).toBool();
 
     bmpCompress->setCheckState((settings.value("TextureExportDialog/BMP/compressRLE",false).toBool() ? Qt::Checked : Qt::Unchecked));
     bmpMagicPink->setCheckState((settings.value("TextureExportDialog/BMP/magicPink",false).toBool() ? Qt::Checked : Qt::Unchecked));
@@ -454,6 +455,7 @@ void TextureExportDialog::saveSettings()
     settings.setValue("TextureExportDialog/selectedFilter",selectedFilter);
     settings.setValue("directories/lastImageExportDir",lastImageExportDir);
     settings.setValue("TextureExportDialog/exportDefinitions",(exportDefinitions->checkState() == Qt::Checked ? true : false));
+    settings.setValue("TextureExportDialog/addExtension",addExtension);
 
     settings.setValue("TextureExportDialog/BMP/compressRLE",(bmpCompress->checkState() == Qt::Checked ? true : false));
     settings.setValue("TextureExportDialog/BMP/magicPink",(bmpMagicPink->checkState() == Qt::Checked ? true : false));
@@ -596,13 +598,18 @@ void TextureExportDialog::saveTexture()
     QString targaFilter = "TARGA (*.tga *.targa)";
 
     bool success = false;
+    QFileInfo file(filename);
 
     if(selectedFilter == bitmapFilter)
     {
+        if(addExtension && file.suffix().isEmpty())
+            filename += ".bmp";
         success = FreeImage_Save(FIF_BMP, cachedBitmap, filename.toLocal8Bit().data(), (bmpCompress->checkState() == Qt::Checked ? BMP_SAVE_RLE : 0));
     }
     else if(selectedFilter == pngFilter)
     {
+        if(addExtension && file.suffix().isEmpty())
+            filename += ".png";
         int compression = 0;
         switch(pngCompression->currentIndex())
         {
@@ -623,15 +630,21 @@ void TextureExportDialog::saveTexture()
     }
     else if(selectedFilter == jpegFilter)
     {
+        if(addExtension && file.suffix().isEmpty())
+            filename += ".jpeg";
         success = FreeImage_Save(FIF_JPEG, cachedBitmap, filename.toLocal8Bit().data(), jpegQuality->value() | JPEG_OPTIMIZE | (jpegProgressive->checkState() == Qt::Checked ? JPEG_PROGRESSIVE : 0));
     }
     else if(selectedFilter == gifFilter)
     {
-
+        if(addExtension && file.suffix().isEmpty())
+            filename += ".gif";
+        //TODO: Finish GIF export/import support
     }
     else if(selectedFilter == tiffFilter)
     {
 
+        if(addExtension && file.suffix().isEmpty())
+            filename += ".tiff";
         int compression = 0;
         switch(tiffCompression->currentIndex())
         {
@@ -655,6 +668,8 @@ void TextureExportDialog::saveTexture()
     }
     else if(selectedFilter == targaFilter)
     {
+        if(addExtension && file.suffix().isEmpty())
+            filename += ".tga";
         success = FreeImage_Save(FIF_TARGA, cachedBitmap, filename.toLocal8Bit().data(), (tgaCompress->checkState() == Qt::Checked ? TARGA_SAVE_RLE : 0));
     }
 
