@@ -817,7 +817,6 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
             switch(i)
             {
                 case 0:
-                    cout<<"V0"<<endl;
                     glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex)*vertices.size(), &vertices[0].x, GL_STATIC_DRAW);
 
                     glEnableVertexAttribArray(0);
@@ -827,7 +826,6 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                     break;
 
                 case 1:
-                    cout<<"V1"<<endl;
                     glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Norm)*vertices_norm.size(), &vertices_norm[0].x, GL_STATIC_DRAW);
 
                     glEnableVertexAttribArray(0);
@@ -839,7 +837,6 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                     break;
 
                 case 2:
-                    cout<<"V2"<<endl;
                     glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Tex)*vertices_tex.size(), &vertices_tex[0].x, GL_STATIC_DRAW);
 
                     glEnableVertexAttribArray(0);
@@ -851,7 +848,6 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                     break;
 
                 case 3:
-                    cout<<"V3"<<endl;
                     glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Norm_Tex)*vertices_norm_tex.size(), &vertices_norm_tex[0].x, GL_STATIC_DRAW);
 
                     glEnableVertexAttribArray(0);

@@ -69,7 +69,6 @@ void TexEntry::setCurrentPalette(int palette)
 {
     if(palette >= 0 && palette < numPalettes)
     {
-        cout<<"Current palette set "<<palette<<endl;
         currentPalette = palette;
     }
 };
