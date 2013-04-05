@@ -257,7 +257,7 @@ void MainWindow::loadSettings()
         }
     }
 
-    rootDir = settings.value("directories/rootDir").toString();
+    rootDir = QDir::toNativeSeparators(settings.value("directories/rootDir").toString());
 
     if(!rootDir.isEmpty())
     setConvenienceActionsEnabled(true);
@@ -270,7 +270,7 @@ void MainWindow::saveSettings()
 {
     QSettings settings;
     settings.setValue("firstRun",false);
-    settings.setValue("directories/rootDir",rootDir);
+    settings.setValue("directories/rootDir",QDir::fromNativeSeparators(rootDir));
 
     settings.setValue("MainWindow/maximized",isMaximized());
     showNormal();
@@ -585,14 +585,13 @@ int MainWindow::copyFile(QString from,QString to)
 
 void MainWindow::installPatch()
 {
-    //NITPICK: Fix all brackets to face same direction in filenames.
     int ret = QMessageBox::No;
     QString directory;
     if(!rootDir.isEmpty())
     {
         QMessageBox msgBox(centralWindow);
         msgBox.setText(tr("<b>Do you want to use the default Driver directory?</b>"));
-        msgBox.setInformativeText(tr("Select 'No' to choose a different directory, or 'yes' to install to: ")+rootDir);
+        msgBox.setInformativeText(tr("Select 'No' to choose a different directory, or 'Yes' to install to: ")+rootDir);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Yes);
@@ -615,33 +614,40 @@ void MainWindow::installPatch()
     if(directory.isEmpty())
     return;
 
+    directory = QDir::toNativeSeparators(directory);
+
     mainLog.Log("Preparing to install vertex patch.");
 
     QMessageBox msgBox(centralWindow);
     msgBox.setText(tr("<b>Would you like to make a backup the files being replaced?</b>"));
-    msgBox.setInformativeText(tr("The files will be saved under DCI_Backup in the driver directory.")+rootDir);
+    msgBox.setInformativeText(tr("The files will be saved under DCI_Backup in the driver directory ")+rootDir);
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::Yes);
     ret = msgBox.exec();
+
+    QString src,dest;
+
     if(ret == QMessageBox::Yes)
     {
 
-        mkdir(QString(directory+"\\DCI_Backup").toLocal8Bit().data());
-        mkdir(QString(directory+"\\DCI_Backup\\Levels").toLocal8Bit().data());
+        mkdir(QDir::toNativeSeparators(directory+"\\DCI_Backup").toLocal8Bit().data());
+        mkdir(QDir::toNativeSeparators(directory+"\\DCI_Backup\\Levels").toLocal8Bit().data());
 
         const char* backup_files[] = {"\\Game.exe","\\Levels\\Miami_01.den","\\Levels\\NC_01.den"};
         for(int i = 0; i < 3; i++)
         {
-            mainLog.Log("Backing up file %s to %s.",QString(directory+backup_files[i]).toLocal8Bit().data(),QString(directory+"\\DCI_Backup"+backup_files[i]).toLocal8Bit().data());
-            ret = copyFile(directory+backup_files[i],directory+"\\DCI_Backup"+backup_files[i]);
+            src = QDir::toNativeSeparators(directory+backup_files[i]);
+            dest = QDir::toNativeSeparators(directory+"\\DCI_Backup"+backup_files[i]);
+            mainLog.Log("Backing up file %s to %s.",src.toLocal8Bit().data(),dest.toLocal8Bit().data());
+            ret = copyFile(src,dest);
             if(ret != 0)
             {
                 mainLog.Log("Failed to backup file!");
                 msgBox.setText(tr("<b>Failed to backup file! Aborting installation!</b>"));
                 msgBox.setIcon(QMessageBox::Critical);
                 msgBox.setStandardButtons(QMessageBox::Ok);
-                msgBox.setInformativeText(tr("The file ")+backup_files[i]+tr(" failed to copy to ")+directory+"\\DCI_Backup"+backup_files[i]);
+                msgBox.setInformativeText(tr("The file ")+src+tr(" failed to copy to ")+dest);
                 msgBox.exec();
                 return;
             }
@@ -660,12 +666,14 @@ void MainWindow::installPatch()
     for(int i = 0; i < 15; i++)
     {
         mainLog.Log("Copying file %s.",patch_files[i]);
-        ret = copyFile(QString(patch_files[i]),directory+dest_files[i]);
+        src = QDir::toNativeSeparators(patch_files[i]);
+        dest = QDir::toNativeSeparators(directory+dest_files[i]);
+        ret = copyFile(src,dest);
         if(ret != 0)
         {
             mainLog.Log("File failed to copy!");
             msgBox.setText(tr("<b>Failed to copy file!</b>"));
-            msgBox.setInformativeText(tr("The file ")+patch_files[i]+tr(" failed to copy to ")+directory+dest_files[i]);
+            msgBox.setInformativeText(tr("The file ")+src+tr(" failed to copy to ")+dest);
             msgBox.setIcon(QMessageBox::Critical);
             msgBox.setStandardButtons(QMessageBox::Ok);
             msgBox.exec();
