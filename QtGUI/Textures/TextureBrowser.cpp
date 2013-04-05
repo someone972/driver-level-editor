@@ -50,7 +50,6 @@ void TextureBrowser::setup()
     level = NULL;
 
     display->viewer()->installEventFilter(this);
-    display->installEventFilter(this);
     displayControl = false;
 
     newTextureDialog = new NewTextureDialog(this);
@@ -327,7 +326,6 @@ void TextureBrowser::applyFilter(int idx)
 
 void TextureBrowser::syncTextureSelection(int s)
 {
-    cout<<"SYNC "<<s<<endl;
     display->setSelectedTexture(s);
     textureNumber->setValue(s);
     indexList->setCurrentItem(indexList->item(s));
@@ -366,6 +364,7 @@ void TextureBrowser::setTextureSize(int idx)
     if(idx >= 0 && idx < 4)
     {
         int sizes[4] = {64,128,256,512};
+        textureSizeSelect->setCurrentIndex(idx);
         display->viewer()->setTextureSize(sizes[idx]);
     }
 };
@@ -416,7 +415,6 @@ void TextureBrowser::texturesChanged()
 
 void TextureBrowser::refreshIndexList()
 {
-    cout<<"REFRESH"<<endl;
     if(level)
     {
         if(level->textures.getNumTextures() < indexList->count())
@@ -475,25 +473,31 @@ void TextureBrowser::showEvent(QShowEvent* event)
 
 bool TextureBrowser::eventFilter(QObject* obj, QEvent* event)
 {
+    //Allow for control-up/down/scroll resizing and control-left/right palette changes
     if(obj == display->viewer())
     {
         if (event->type() == QEvent::KeyPress)
         {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
             if(keyEvent->key() == Qt::Key_Control)
+            {
+                //need to stop display from scrolling while we have control pressed
+                display->setLocked(true);
+                //used for wheel event to check if resizing is applicable.
                 displayControl = true;
+            }
 
             if(keyEvent->modifiers() & Qt::ControlModifier)
             {
                 switch(keyEvent->key())
                 {
                     case Qt::Key_Up:
-                        if(textureSizeSelect->currentIndex() > 0)
-                            textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()-1);
-                        break;
-                    case Qt::Key_Down:
                         if(textureSizeSelect->currentIndex() < textureSizeSelect->count()-1)
                             textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()+1);
+                        break;
+                    case Qt::Key_Down:
+                        if(textureSizeSelect->currentIndex() > 0)
+                            textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()-1);
                         break;
                     case Qt::Key_Left:
                         if(paletteList->currentRow() > 0)
@@ -514,7 +518,10 @@ bool TextureBrowser::eventFilter(QObject* obj, QEvent* event)
         {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
             if(keyEvent->key() == Qt::Key_Control)
+            {
+                display->setLocked(false);
                 displayControl = false;
+            }
         }
         else if(event->type() == QEvent::Wheel)
         {
@@ -529,26 +536,6 @@ bool TextureBrowser::eventFilter(QObject* obj, QEvent* event)
                 if(textureSizeSelect->currentIndex() < textureSizeSelect->count()-1 && numSteps > 0)
                     textureSizeSelect->setCurrentIndex(textureSizeSelect->currentIndex()+1);
             }
-        }
-    }
-    else if(obj == display)
-    {
-        if (event->type() == QEvent::KeyPress)
-        {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-            if(keyEvent->key() == Qt::Key_Control)
-                displayControl = true;
-        }
-        if (event->type() == QEvent::KeyRelease)
-        {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-            if(keyEvent->key() == Qt::Key_Control)
-                displayControl = false;
-        }
-        if((event->type() == QEvent::Wheel) && displayControl)
-        {
-            //TODO: Fix scroll area so it does not scroll when control is being held.
-            return true;
         }
     }
     return false;

@@ -145,6 +145,8 @@ void TextureViewGL::setup()
     connect(&timer, SIGNAL(timeout()), this, SLOT(checkTimer()));
 };
 
+//OpenGL and drawing functions
+
 void TextureViewGL::initializeGL()
 {
 
@@ -179,29 +181,26 @@ void TextureViewGL::drawTexture(int x, int y, GLuint texture)
 void TextureViewGL::drawHighlight(int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
     glDisable(GL_TEXTURE_2D);
-    int red = r;
-    int green = g;
-    int blue = b;
-    for(int i = 1; i <= 4; i++)
+    for(int i = 4; i >= 1; i--)
     {
+        int red = r-20*i;
+        int green = g-20*i;
+        int blue = b-20*i;
+
         if(red < 0)
             red = 0;
         if(green < 0)
             green = 0;
         if(blue < 0)
             blue = 0;
-
         glColor3ub(red,green,blue);
-        glBegin(GL_LINE_LOOP);
-        glVertex2f(0.5+(float)(x-i), 0.5+(float)(height()-(y+textureSize+i)));
-        glVertex2f((float)(x+textureSize+i), 0.5+(float)(height()-(y+textureSize+i)));
-        glVertex2f((float)(x+textureSize+i), -0.5+(float)(height()-(y-i)));
-        glVertex2f(0.5+(float)(x-i), -0.5+(float)(height()-(y-i)));
-        glEnd();
 
-        red -= 20;
-        green -= 20;
-        blue -= 20;
+        glBegin(GL_QUADS);
+        glVertex2f((float)(x-i), (float)(height()-(y+textureSize+i)));
+        glVertex2f((float)(x+textureSize+i), (float)(height()-(y+textureSize+i)));
+        glVertex2f((float)(x+textureSize+i), (float)(height()-(y-i)));
+        glVertex2f((float)(x-i), (float)(height()-(y-i)));
+        glEnd();
     }
     glColor3f(1,1,1);
     glEnable(GL_TEXTURE_2D);
@@ -209,9 +208,6 @@ void TextureViewGL::drawHighlight(int x, int y, unsigned char r, unsigned char g
 
 void TextureViewGL::drawPositioner(int i, int currentTime)
 {
-    drawTexture(texturePositions[i].getXPosition(currentTime),texturePositions[i].getYPosition(currentTime),
-                textureList->getTexture(texturePositions[i].getTextureIndex(),(texturePositions[i].getPaletteIndex() == -1 ? textureList->getCurrentPalette(texturePositions[i].getTextureIndex()) : texturePositions[i].getPaletteIndex())));
-
     if(i == selectedPositioner)
     {
         drawHighlight(texturePositions[i].getXPosition(currentTime),texturePositions[i].getYPosition(currentTime),0,0,255);
@@ -222,6 +218,8 @@ void TextureViewGL::drawPositioner(int i, int currentTime)
         drawHighlight(texturePositions[i].getXPosition(currentTime),texturePositions[i].getYPosition(currentTime),
                         (color>>16)&0x0ff,(color>>8)&0x0ff,(color)&0x0ff);
     }
+    drawTexture(texturePositions[i].getXPosition(currentTime),texturePositions[i].getYPosition(currentTime),
+                textureList->getTexture(texturePositions[i].getTextureIndex(),(texturePositions[i].getPaletteIndex() == -1 ? textureList->getCurrentPalette(texturePositions[i].getTextureIndex()) : texturePositions[i].getPaletteIndex())));
 };
 
 void TextureViewGL::paintGL()
@@ -250,6 +248,8 @@ void TextureViewGL::paintGL()
     if(!autoBufferSwap())
     swapBuffers();
 };
+
+//Overloaded QWidget functions and events
 
 QSize TextureViewGL::minimumSizeHint() const
 {
@@ -401,56 +401,51 @@ void TextureViewGL::mouseMoveEvent(QMouseEvent* event)
     }
 };
 
-void TextureViewGL::checkTimer()
-{
-    if(getMilliseconds() > lastTransition)
-    timer.stop();
-};
-
 void TextureViewGL::mousePressEvent(QMouseEvent* event)
 {
-    if(event->button() == Qt::LeftButton)
+    if(event->x()+xDisplacement > 10 && event->y()+yDisplacement > 10)
     {
-        if(event->x()+xDisplacement > 10 && event->y()+yDisplacement > 10)
+        int x = event->x()+xDisplacement-10;
+        int y = event->y()+yDisplacement-10;
+        if(x%(textureSize+10) < textureSize && y%(textureSize+10) < textureSize)
         {
-            int x = event->x()+xDisplacement-10;
-            int y = event->y()+yDisplacement-10;
-            if(x%(textureSize+10) < textureSize && y%(textureSize+10) < textureSize)
+            int gridX = x/(textureSize+10);
+            int gridY = y/(textureSize+10);
+            int currentTime = getMilliseconds();
+            for(unsigned int i = 0; i < texturePositions.size(); i++)
             {
-                int gridX = x/(textureSize+10);
-                int gridY = y/(textureSize+10);
-                int currentTime = getMilliseconds();
-                for(unsigned int i = 0; i < texturePositions.size(); i++)
+                if(texturePositions[i].getGridX() == gridX && texturePositions[i].getGridY() == gridY)
                 {
-                    if(texturePositions[i].getGridX() == gridX && texturePositions[i].getGridY() == gridY)
+
+                    if(event->button() == Qt::LeftButton)
                     {
                         heldPositioner = i;
                         heldPositionX = event->x()+xDisplacement-texturePositions[i].getXPosition(currentTime);
                         heldPositionY = event->y()+yDisplacement-texturePositions[i].getYPosition(currentTime);
-                        int oldTexture = selectedTexture;
-                        int oldPalette = selectedPalette;
-                        if(selectedTexture != texturePositions[i].getTextureIndex())
-                        {
-                            selectedTexture = texturePositions[i].getTextureIndex();
-                        }
-                        int palette = (texturePositions[i].getPaletteIndex() == -1 ? textureList->getCurrentPalette(texturePositions[i].getTextureIndex()) : texturePositions[i].getPaletteIndex());
-                        if(selectedPalette !=  palette && palette != -1)
-                        {
-                            selectedPalette = palette;
-                        }
-                        if(selectedTexture != oldTexture)
-                        {
-                            emit textureSelectionChanged(selectedTexture);
-                            update();
-                        }
-                        if(selectedPalette != oldPalette)
-                        {
-                            emit paletteSelectionChanged(selectedPalette);
-                            update();
-                        }
-                        findSelectedPositioner();
-                        break;
                     }
+                    int oldTexture = selectedTexture;
+                    int oldPalette = selectedPalette;
+                    if(selectedTexture != texturePositions[i].getTextureIndex())
+                    {
+                        selectedTexture = texturePositions[i].getTextureIndex();
+                    }
+                    int palette = (texturePositions[i].getPaletteIndex() == -1 ? textureList->getCurrentPalette(texturePositions[i].getTextureIndex()) : texturePositions[i].getPaletteIndex());
+                    if(selectedPalette !=  palette && palette != -1)
+                    {
+                        selectedPalette = palette;
+                    }
+                    if(selectedTexture != oldTexture)
+                    {
+                        emit textureSelectionChanged(selectedTexture);
+                        update();
+                    }
+                    if(selectedPalette != oldPalette)
+                    {
+                        emit paletteSelectionChanged(selectedPalette);
+                        update();
+                    }
+                    findSelectedPositioner();
+                    break;
                 }
             }
         }
@@ -553,7 +548,6 @@ void TextureViewGL::resizeEvent(QResizeEvent* event)
 
 void TextureViewGL::keyPressEvent(QKeyEvent* event)
 {
-        cout<<event->key()<<endl;
     if(!(event->modifiers() & Qt::ControlModifier))
     {
         int gridX = 0;
@@ -626,14 +620,18 @@ void TextureViewGL::keyPressEvent(QKeyEvent* event)
     }
 };
 
-void TextureViewGL::keyReleaseEvent(QKeyEvent* event)
-{
-    cout<<event->key()<<endl;
-};
+//Misc.
 
 void TextureViewGL::setTextureData(DriverTextures* newTexData)
 {
+    if(textures)
+        textures->unregisterEventHandler(this);
+
     textures = newTexData;
+
+    if(textures)
+        textures->registerEventHandler(this);
+
     rebuildView();
 };
 
@@ -655,6 +653,12 @@ int TextureViewGL::getVerticalScrollStep()
 int TextureViewGL::getMilliseconds()
 {
     return timeKeeper.elapsed();
+};
+
+void TextureViewGL::checkTimer()
+{
+    if(getMilliseconds() > lastTransition)
+    timer.stop();
 };
 
 void TextureViewGL::findSelectedPositioner()
@@ -915,6 +919,48 @@ bool TextureViewGL::textureAt(const QPoint& point, int* texture, int* palette) c
     return false;
 };
 
+//Level event handlers
+
+void TextureViewGL::textureRemoved(int idx)
+{
+    rebuildView();
+};
+
+void TextureViewGL::textureChanged(int /*idx*/)
+{
+    //Number of textures has not changed, only appearance, so update screen.
+    update();
+};
+
+void TextureViewGL::textureMoved(int /*from*/, int /*to*/)
+{
+    rebuildView();
+};
+
+void TextureViewGL::textureInserted(int idx)
+{
+    rebuildView();
+};
+
+void TextureViewGL::texturesDestroyed()
+{
+    if(textures)
+        textures->unregisterEventHandler(this);
+    textures = NULL;
+    rebuildView();
+};
+
+void TextureViewGL::texturesReset(bool aboutToBe)
+{
+    if(!aboutToBe)
+    rebuildView();
+};
+
+void TextureViewGL::texturesOpened()
+{
+    rebuildView();
+};
+
 TextureView::TextureView(QWidget* parent, const QGLWidget * shareWidget, Qt::WindowFlags f) : QAbstractScrollArea(parent)
 {
     glView = new TextureViewGL(this,shareWidget,f);
@@ -937,7 +983,10 @@ void TextureView::setup()
     glView->show();
     glView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    setFocusPolicy(Qt::WheelFocus);
+
+    //Required to allow for control-scroll resizing in texture browser. Does not affect scrolling or clicking.
+    setFocusPolicy(Qt::NoFocus);
+
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(glView);
     layout->setContentsMargins(0,0,0,0);
@@ -945,6 +994,7 @@ void TextureView::setup()
     viewportWidget = new QWidget(this);
     viewportWidget->setContentsMargins(0,0,0,0);
     viewportWidget->setLayout(layout);
+    locked = false;
 
     setViewport(viewportWidget);
     QSize minGL = glView->minimumSizeHint();
@@ -970,6 +1020,18 @@ void TextureView::updateStep()
 void TextureView::updateViewerPosition()
 {
     glView->setDisplacement(horizontalScrollBar()->value(),verticalScrollBar()->value());
+};
+
+void TextureView::setLocked(bool lock)
+{
+    locked = lock;
+};
+
+void TextureView::wheelEvent(QWheelEvent* event)
+{
+    //Intercept wheel event, and if locked, do not pass on to scrollbars.
+    if(!locked)
+        QAbstractScrollArea::wheelEvent(event);
 };
 
 void TextureView::reconfigureScrollbars()

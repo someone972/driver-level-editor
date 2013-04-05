@@ -7,7 +7,7 @@
 #include "../TextureList.hpp"
 #include "../../Driver_Routines/driver_levels.hpp"
 
-class TextureViewGL : public QGLWidget
+class TextureViewGL : public QGLWidget, IDriverTextureEvents
 {
     Q_OBJECT
 
@@ -64,6 +64,14 @@ class TextureViewGL : public QGLWidget
         QSize getVirtualDimensions();
         QRect getSelectionRect();
 
+        void texturesDestroyed();
+        void texturesReset(bool aboutToBe);
+        void texturesOpened();
+        void textureRemoved(int idx);
+        void textureChanged(int idx);
+        void textureInserted(int idx);
+        void textureMoved(int from, int to);
+
     public slots:
         void setSelectedTexture(int idx);
         void setSelectedPalette(int idx);
@@ -89,7 +97,6 @@ class TextureViewGL : public QGLWidget
         void mouseReleaseEvent(QMouseEvent* event);
         void mouseMoveEvent(QMouseEvent* event);
         void keyPressEvent(QKeyEvent* event);
-        void keyReleaseEvent(QKeyEvent* event);
         void resizeEvent(QResizeEvent* event);
 
         void drawTexture(int x, int y, GLuint texture);
@@ -137,14 +144,17 @@ class TextureView : public QAbstractScrollArea
         void ensureSelectionVisible();
         void setSelectedTexture(int idx);
         void setSelectedPalette(int idx);
+        void setLocked(bool lock);
 
     protected:
         void scrollContentsBy(int dx, int dy);
         void updateStep();
         void updateViewerPosition();
+        void wheelEvent(QWheelEvent* event);
 
         TextureViewGL* glView;
         QWidget* viewportWidget;
+        bool locked;
 };
 
 #endif
