@@ -1255,6 +1255,11 @@ Vector3f DriverModel::getNormal(int idx) const
     return Vector3f(0,0,0);
 };
 
+int DriverModel::getNumCollisionBounds() const
+{
+    return numCollisionBounds;
+};
+
 //getCenter and getBounds still considered as const because the object appears immutable from the user's perspective.
 Vector3f DriverModel::getCenter() const
 {

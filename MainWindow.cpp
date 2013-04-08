@@ -263,6 +263,7 @@ void MainWindow::loadSettings()
     setConvenienceActionsEnabled(true);
 
     textureBrowser->loadSettings();
+    modelViewPanel->loadSettings();
     mainLog.Log("Finished loading settings.");
 };
 
@@ -278,6 +279,7 @@ void MainWindow::saveSettings()
     settings.setValue("MainWindow/pos",pos());
 
     textureBrowser->saveSettings();
+    modelViewPanel->saveSettings();
 };
 
 void MainWindow::createActions()

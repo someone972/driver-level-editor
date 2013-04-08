@@ -74,8 +74,10 @@ HEADERS = \
     QtGUI/Palettes/PaletteEditor.hpp \
     QtGUI/Palettes/PaletteDisplay.hpp \
     QtGUI/Palettes/AddPaletteDialog.hpp \
-    QtGUI/Models/DriverModelView.hpp \
+    QtGUI/Models/DriverModelListModel.hpp \
+    QtGUI/Models/ModelView.hpp \
     QtGUI/Models/ModelRenderer.hpp \
+    QtGUI/Models/ModelViewPanel.hpp \
 	MainWindow.hpp
 SOURCES = \
     vector.cpp \
@@ -111,8 +113,10 @@ SOURCES = \
     QtGUI/Palettes/PaletteEditor.cpp \
     QtGUI/Palettes/PaletteDisplay.cpp \
     QtGUI/Palettes/AddPaletteDialog.cpp \
-    QtGUI/Models/DriverModelView.cpp \
+    QtGUI/Models/DriverModelListModel.cpp \
+    QtGUI/Models/ModelView.cpp \
     QtGUI/Models/ModelRenderer.cpp \
+    QtGUI/Models/ModelViewPanel.cpp \
 	MainWindow.cpp \
 	main.cpp
 TARGET = \

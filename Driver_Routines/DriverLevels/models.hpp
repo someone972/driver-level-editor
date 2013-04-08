@@ -124,6 +124,8 @@ class DriverModel
         ModelFace getFace(int idx) const;
         void setFace(int idx, ModelFace face);
 
+        int getNumCollisionBounds() const;
+
         Vector3f getCenter() const;
         Vector3f getBounds() const; //gets x,y,z lengths, relative to the center point.
         float getBoundingCircleRadius() const; //radius ignoring y component, i.e. as a top down orthographic circle

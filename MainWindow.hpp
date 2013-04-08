@@ -15,7 +15,7 @@
 #include "QtGUI/AboutDialog.hpp"
 #include "QtGUI/LevelLoadingDialog.hpp"
 #include "QtGUI/CustomLevelDialog.hpp"
-#include "QtGUI/Models/DriverModelView.hpp"
+#include "QtGUI/Models/ModelViewPanel.hpp"
 #include "QtGUI/SaveAsDialog.hpp"
 #include "QtGUI/Textures/TextureDefinitionEditor.hpp"
 #include "QtGUI/Textures/TextureBrowser.hpp"
