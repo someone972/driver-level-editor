@@ -11,7 +11,7 @@ void CmdLogger::writeTime()
     struct tm * timeinfo;
     time(&rawtime);
     timeinfo = localtime (&rawtime);
-    printf("%d:%d:%d - ",timeinfo->tm_hour,timeinfo->tm_hour,timeinfo->tm_sec);
+    printf("%d:%d:%d - ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
 };
 
 void CmdLogger::Log(const char* base, ...)
@@ -81,7 +81,7 @@ void FileLogger::writeTime()
     struct tm * timeinfo;
     time(&rawtime);
     timeinfo = localtime (&rawtime);
-    fprintf(logfile,"%d:%d:%d - ",timeinfo->tm_hour,timeinfo->tm_hour,timeinfo->tm_sec);
+    fprintf(logfile,"%d:%d:%d - ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
 };
 
 void FileLogger::Log(const char* base, ...)
