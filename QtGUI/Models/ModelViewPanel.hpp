@@ -4,18 +4,27 @@
 #include <QtWidgets>
 #include "ModelView.hpp"
 #include "DriverModelListModel.hpp"
+#include "ModelDialogs.hpp"
 #include "../../Driver_Routines/driver_levels.hpp"
 #include "../../Log_Routines/debug_logger.hpp"
 
 //TODO: Add level events to ModelViewPanel and update table size on open.
 
-class ModelViewPanel : public QSplitter
+class ModelViewPanel : public QSplitter, IDriverModelEvents, IDriverLevelEvents
 {
     Q_OBJECT
 
     public:
         ModelViewPanel(QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0, DebugLogger* logger = NULL);
+        ~ModelViewPanel();
         ModelView* glViewer();
+
+        void modelsDestroyed(ModelContainer* container);
+        void modelsReset(ModelContainer* container, bool aboutToBe);
+        void modelsOpened(ModelContainer* container);
+        void modelsSaved(ModelContainer* container, bool aboutToBe);
+        void modelInserted(ModelContainer* container, int idx);
+        void levelDestroyed();
 
     signals:
         void modelChanged(int idx);
@@ -58,8 +67,6 @@ class ModelViewPanel : public QSplitter
         void doModelsContextMenu(const QPoint& pos);
         void doEventModelsContextMenu(const QPoint& pos);
         void tabChanged(int newTab);
-
-        void handleLevelChange();
 
     protected:
         void setColumnVisibility();

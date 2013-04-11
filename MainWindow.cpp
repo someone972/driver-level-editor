@@ -79,7 +79,6 @@ MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
     modelViewPanel = new ModelViewPanel(this, NULL, 0, &mainLog);
     modelViewPanel->setLevel(&level);
     modelViewPanel->setTextureProvider(&levelTextures);
-    connect(this, SIGNAL(levelChanged()), modelViewPanel, SLOT(handleLevelChange()));
 
     definitionEditor = new TextureDefinitionEditor(this, modelViewPanel->glViewer()); //Don't forget, this needs a share widget when model viewing is done
     definitionEditor->setLevel(&level);
@@ -90,7 +89,6 @@ MainWindow::MainWindow() : playerCosmetics(18), civilianCosmetics(12)
     textureBrowser->setLevel(&level);
     textureBrowser->setTextureList(&levelTextures);
     textureBrowser->setD3D(&d3d);
-    connect(this, SIGNAL(levelChanged()), textureBrowser, SLOT(texturesChanged()));
 
     levelLoader = new LevelLoadingDialog(this);
     levelLoader->setLevel(&level);

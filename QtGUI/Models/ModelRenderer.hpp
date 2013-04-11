@@ -40,10 +40,8 @@ typedef struct MyGLVertex_Tex
     GLubyte g;
     GLubyte b;
     GLubyte a;
-    GLubyte s0;
-    GLubyte t0;
-    GLubyte reserved0;
-    GLubyte reserved1;
+    GLfloat s0;
+    GLfloat t0;
 } MyGLVertex_Tex;
 
 typedef struct MyGLVertex_Norm
@@ -72,10 +70,8 @@ typedef struct MyGLVertex_Norm_Tex
     GLubyte g;
     GLubyte b;
     GLubyte a;
-    GLubyte s0;
-    GLubyte t0;
-    GLubyte reserved0;
-    GLubyte reserved1;
+    GLfloat s0;
+    GLfloat t0;
 } MyGLVertex_Norm_Tex;
 
 class ModelShaders
@@ -90,8 +86,9 @@ class ModelShaders
         void setViewMatrix(QMatrix4x4 view);
         void setModelMatrix(QMatrix4x4 model);
 
+        int initializeShaders();
+
     protected:
-        void initializeShaders();
 
         QGLShaderProgram colored;
         QGLShaderProgram colored_normal;
@@ -106,7 +103,7 @@ class ModelShaders
 class ModelMatrixHandler
 {
     public:
-        ModelMatrixHandler(QGLContext* context_p, ModelShaders* program);
+        ModelMatrixHandler(QGLContext* context_p, bool useLegacy, ModelShaders* program);
 
         void useLegacyRendering(bool use);
         void setPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
@@ -188,7 +185,7 @@ class ModelTextureGroup
 class ModelRenderer : public QGLFunctions
 {
     public:
-        ModelRenderer(QGLContext* glcontext, ModelShaders* _shaders = NULL, DebugLogger* logger = NULL);
+        ModelRenderer(QGLContext* glcontext, bool useLegacy, ModelShaders* _shaders = NULL, DebugLogger* logger = NULL);
         ~ModelRenderer();
         void cleanup();
 
@@ -197,6 +194,7 @@ class ModelRenderer : public QGLFunctions
         void render(int group = -1);
         int getNumGroups();
         int getTextureUsed(int idx);
+        static bool hasMissingFunctions();
 
     protected:
         void initializeMissingFunctions();
@@ -211,6 +209,13 @@ class ModelRenderer : public QGLFunctions
         GLuint iboId;
         GLuint vboIds[4];
         GLuint vaoIds[4];
+
+        //The following are used for building model and are kept around if legacy rendering is enabled for drawing.
+        vector<MyGLVertex> vertices;
+        vector<MyGLVertex_Norm> verticesNorm;
+        vector<MyGLVertex_Tex> verticesTex;
+        vector<MyGLVertex_Norm_Tex> verticesNormTex;
+        GLushort* indicies;
 };
 
 class ModelRendererList

@@ -1417,10 +1417,12 @@ ModelContainer::ModelContainer()
 ModelContainer::~ModelContainer()
 {
     cleanup();
+    eventManager.Raise(EVENT(IDriverModelEvents::modelsDestroyed)(this));
 };
 
 void ModelContainer::cleanup()
 {
+    eventManager.Raise(EVENT(IDriverModelEvents::modelsReset)(this, true));
     if(models)
     {
         for(int i = 0; i < numModels; i++)
@@ -1431,6 +1433,7 @@ void ModelContainer::cleanup()
     }
     models = NULL;
     numModels = 0;
+    eventManager.Raise(EVENT(IDriverModelEvents::modelsReset)(this, false));
 };
 
 int ModelContainer::dereferenceModel(DriverModel* mod)
@@ -1489,6 +1492,8 @@ void ModelContainer::insertModel(int idx)
         }
         models = newModels;
         numModels++;
+
+        eventManager.Raise(EVENT(IDriverModelEvents::modelInserted)(this, idx));
     }
 };
 
@@ -1575,6 +1580,8 @@ int ModelContainer::load(IOHandle handle, IOCallbacks* callbacks, int size, Debu
         }
     }
     delete[] tempData;
+
+    eventManager.Raise(EVENT(IDriverModelEvents::modelsOpened)(this));
     return 0;
 };
 
@@ -1592,6 +1599,8 @@ int ModelContainer::save(IOHandle handle, IOCallbacks* callbacks)
 {
     if(!handle || !callbacks)
     return 1;
+
+    eventManager.Raise(EVENT(IDriverModelEvents::modelsSaved)(this, true));
 
     callbacks->write(&numModels,4,1,handle);
 
@@ -1613,5 +1622,16 @@ int ModelContainer::save(IOHandle handle, IOCallbacks* callbacks)
         callbacks->write(tempData,1,modelSize,handle);
     }
     delete[] tempData;
+    eventManager.Raise(EVENT(IDriverModelEvents::modelsSaved)(this, false));
     return 0;
+};
+
+void ModelContainer::registerEventHandler(IDriverModelEvents* handler)
+{
+    eventManager.Register(handler);
+};
+
+void ModelContainer::unregisterEventHandler(IDriverModelEvents* handler)
+{
+    eventManager.Unregister(handler);
 };

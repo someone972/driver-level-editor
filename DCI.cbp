@@ -6,6 +6,7 @@
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
+		<Option virtualFolders="QtGUI\Textures\;" />
 		<MakeCommands>
 			<Build command="$make -f $makefile $target" />
 			<CompileFile command="$make -f $makefile $file" />
@@ -112,6 +113,10 @@
 		<Unit filename="QtGUI/LevelLoadingDialog.hpp" />
 		<Unit filename="QtGUI/Models/DriverModelListModel.cpp" />
 		<Unit filename="QtGUI/Models/DriverModelListModel.hpp" />
+		<Unit filename="QtGUI/Models/ModelDialogs.cpp">
+			<Option virtualFolder="QtGUI/Textures/" />
+		</Unit>
+		<Unit filename="QtGUI/Models/ModelDialogs.hpp" />
 		<Unit filename="QtGUI/Models/ModelProperties.cpp" />
 		<Unit filename="QtGUI/Models/ModelProperties.hpp" />
 		<Unit filename="QtGUI/Models/ModelRenderer.cpp" />

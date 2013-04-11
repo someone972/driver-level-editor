@@ -7,6 +7,7 @@
 #include "../ioFuncs.hpp"
 #include "../../Log_Routines/debug_logger.hpp"
 #include "../../vector.hpp"
+#include "../../EventMgr.hpp"
 
 using namespace std;
 
@@ -159,14 +160,32 @@ class DriverModel
         int modelRef;
 };
 
+class ModelContainer;
+
+class IDriverModelEvents
+{
+        DECLARE_EVENTS(IDriverModelEvents);
+    public:
+        DEFINE_EVENT1(IDriverModelEvents, modelsDestroyed, ModelContainer* /*container*/);
+        DEFINE_EVENT2(IDriverModelEvents, modelsReset, ModelContainer* /*container*/, bool /*aboutToBe*/);
+        DEFINE_EVENT1(IDriverModelEvents, modelsOpened, ModelContainer* /*container*/);
+        DEFINE_EVENT2(IDriverModelEvents, modelsSaved, ModelContainer* /*container*/, bool /*aboutToBe*/);
+
+        DEFINE_EVENT2(IDriverModelEvents, modelInserted, ModelContainer* /*container*/, int /*idx*/);
+};
+IMPLEMENT_EVENTS(IDriverModelEvents);
+
 class ModelContainer
 {
     public:
         ModelContainer();
         ~ModelContainer();
         void cleanup();
-        int load(IOHandle handle, IOCallbacks* callbacks,int size, DebugLogger* log = NULL);
 
+        void registerEventHandler(IDriverModelEvents* handler);
+        void unregisterEventHandler(IDriverModelEvents* handler);
+
+        int load(IOHandle handle, IOCallbacks* callbacks,int size, DebugLogger* log = NULL);
         unsigned int getRequiredSize();
         int save(IOHandle handle, IOCallbacks* callbacks);
 
@@ -181,6 +200,7 @@ class ModelContainer
         int dereferenceModel(DriverModel* mod);
         int dereferenceModel(int idx);
     protected:
+        CEventMgr<IDriverModelEvents> eventManager;
         int numModels;
         DriverModel** models;
 };

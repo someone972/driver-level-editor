@@ -137,6 +137,16 @@ ModelViewPanel::ModelViewPanel(QWidget * parent, const QGLWidget * shareWidget, 
     connect(eventNamesList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(eventModelIndexChanged(const QModelIndex&, const QModelIndex&)));
 };
 
+ModelViewPanel::~ModelViewPanel()
+{
+    if(level)
+    {
+        level->unregisterEventHandler(this);
+        level->models.unregisterEventHandler(this);
+        level->eventModels.unregisterEventHandler(this);
+    }
+};
+
 void ModelViewPanel::loadSettings()
 {
     QSettings settings;
@@ -182,22 +192,28 @@ ModelView* ModelViewPanel::glViewer()
 
 void ModelViewPanel::setLevel(DriverLevel* lev)
 {
+    if(level)
+    {
+        level->unregisterEventHandler(this);
+        level->models.unregisterEventHandler(this);
+        level->eventModels.unregisterEventHandler(this);
+    }
     level = lev;
     namesListModel->setLevel(level);
     eventNamesModel->setLevel(level);
     referenceDialog->setLevel(level);
     modelView->setLevel(level);
+    if(level)
+    {
+        level->registerEventHandler(this);
+        level->models.registerEventHandler(this);
+        level->eventModels.registerEventHandler(this);
+    }
 };
 
 void ModelViewPanel::setTextureProvider(TextureList* list)
 {
     modelView->setTextureProvider(list);
-};
-
-void ModelViewPanel::handleLevelChange()
-{
-    namesListModel->resetList();
-    eventNamesModel->resetList();
 };
 
 void ModelViewPanel::tabChanged(int newTab)
@@ -502,5 +518,79 @@ void ModelViewPanel::importCurrentModel()
 void ModelViewPanel::openCurrentModelProperties()
 {
 
+};
+
+void ModelViewPanel::modelsDestroyed(ModelContainer* container)
+{
+    if(container == &level->models)
+    {
+        level->models.unregisterEventHandler(this);
+    }
+    else
+    {
+        level->eventModels.unregisterEventHandler(this);
+    }
+};
+
+void ModelViewPanel::modelsReset(ModelContainer* container, bool aboutToBe)
+{
+    if(!aboutToBe)
+    {
+        if(container == &level->models)
+        {
+            namesListModel->resetList();
+        }
+        else
+        {
+            eventNamesModel->resetList();
+        }
+    }
+};
+
+void ModelViewPanel::modelsOpened(ModelContainer* container)
+{
+    if(container == &level->models)
+    {
+        namesListModel->resetList();
+        namesList->resizeColumnsToContents();
+        namesList->resizeRowsToContents();
+    }
+    else
+    {
+        eventNamesModel->resetList();
+        eventNamesList->resizeColumnsToContents();
+        eventNamesList->resizeRowsToContents();
+    }
+};
+
+void ModelViewPanel::modelsSaved(ModelContainer* container, bool aboutToBe)
+{
+    if(container == &level->models)
+    {
+
+    }
+    else
+    {
+
+    }
+};
+
+void ModelViewPanel::modelInserted(ModelContainer* container, int idx)
+{
+    if(container == &level->models)
+    {
+        namesListModel->resetList();
+    }
+    else
+    {
+        eventNamesModel->resetList();
+    }
+};
+
+void ModelViewPanel::levelDestroyed()
+{
+    level->models.unregisterEventHandler(this);
+    level->eventModels.unregisterEventHandler(this);
+    level = NULL;
 };
 

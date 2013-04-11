@@ -16,40 +16,43 @@ ModelShaders::ModelShaders(QGLContext* context, DebugLogger* logger) :
     shaders[1] = &colored_normal;
     shaders[2] = &colored_textured;
     shaders[3] = &colored_normal_textured;
-
-    initializeShaders();
 };
 
-void ModelShaders::initializeShaders()
+int ModelShaders::initializeShaders()
 {
     QString vertexShaderFilenames[4] = {QString("data/shaders/PC.vert"), QString("data/shaders/PCN.vert"), QString("data/shaders/PCT.vert"), QString("data/shaders/PCNT.vert")};
     QString fragmentShaderFilenames[4] = {QString("data/shaders/PC.frag"), QString("data/shaders/PCN.frag"), QString("data/shaders/PCT.frag"), QString("data/shaders/PCNT.frag")};
 
     log->Log("Attempting to create shaders.");
+    int ret = 0;
 
     for(int i = 0; i < 4; i++)
     {
         bool success = shaders[i]->addShaderFromSourceFile(QGLShader::Vertex, vertexShaderFilenames[i]);
         if(!success)
         {
+            ret = 1+i*4;
             log->Log("WARNING: Could not create vertex shader %d: %s", i, shaders[i]->log().toLocal8Bit().data());
         }
 
         success = shaders[i]->addShaderFromSourceFile(QGLShader::Fragment, fragmentShaderFilenames[i]);
         if(!success)
         {
+            ret = 2+i*4;
             log->Log("WARNING: Could not create fragment shader %d: %s", i, shaders[i]->log().toLocal8Bit().data());
         }
 
         success = shaders[i]->link();
         if(!success)
         {
+            ret = 3+i*4;
             log->Log("WARNING: Could not link shader program %d: %s", i, shaders[i]->log().toLocal8Bit().data());
         }
 
         success = shaders[i]->bind();
         if(!success)
         {
+            ret = 4+i*4;
             log->Log("WARNING: Could not bind shader program %d!", i);
         }
     }
@@ -57,6 +60,7 @@ void ModelShaders::initializeShaders()
     colored_normal_textured.setUniformValue("colorTexture",0);
 
     log->Log("Finished creating shaders.");
+    return ret;
 };
 
 void ModelShaders::bind(bool normal, bool textured)
@@ -101,11 +105,11 @@ void ModelShaders::setModelMatrix(QMatrix4x4 model)
     }
 };
 
-ModelMatrixHandler::ModelMatrixHandler(QGLContext* glcontext, ModelShaders* program)
+ModelMatrixHandler::ModelMatrixHandler(QGLContext* glcontext, bool legacy, ModelShaders* program)
 {
+    useLegacy = legacy;
     shaders = program;
     context = glcontext;
-    useLegacy = false;
     model.setToIdentity();
     projection.setToIdentity();
     view.setToIdentity();
@@ -435,11 +439,13 @@ void BasicCamera::buildMatrix()
     }
 };
 
-ModelRenderer::ModelRenderer(QGLContext* context, ModelShaders* _shaders, DebugLogger* logger) : QGLFunctions(context)
+ModelRenderer::ModelRenderer(QGLContext* context, bool useLegacy, ModelShaders* _shaders, DebugLogger* logger) : QGLFunctions(context)
 {
     numTextureGroups = 0;
     hasNonTextured = false;
+    legacyRendering = useLegacy;
     groups = NULL;
+    indicies = NULL;
     iboId = 0;
     vboIds[0] = vboIds[1] = vboIds[2] = vboIds[3] = 0;
     vaoIds[0] = vaoIds[1] = vaoIds[2] = vaoIds[3] = 0;
@@ -455,19 +461,33 @@ ModelRenderer::~ModelRenderer()
     cleanup();
 };
 
+bool ModelRenderer::hasMissingFunctions()
+{
+    if((PFNGLBINDVERTEXARRAYPROC)wglGetProcAddress("glBindVertexArray") == NULL)
+        return false;
+    if((PFNGLGENVERTEXARRAYSPROC)wglGetProcAddress("glGenVertexArrays") == NULL)
+        return false;
+    if((PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays") == NULL)
+        return false;
+    return true;
+};
+
 void ModelRenderer::initializeMissingFunctions()
 {
-    if(!myGlBindVertexArray || !myGlDeleteVertexArrays || !myGlGenVertexArrays)
+    if(!legacyRendering)
     {
-        log->Log("Attempting to resolve addresses for missing OpenGL functions.");
-        myGlBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)wglGetProcAddress("glBindVertexArray");
-        myGlGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)wglGetProcAddress("glGenVertexArrays");
-        myGlDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays");
         if(!myGlBindVertexArray || !myGlDeleteVertexArrays || !myGlGenVertexArrays)
         {
-            log->Log("WARNING: Could not resolve addresses for glBindVertexArray, glGenVertexAarrays, glDeleteVertexArrays.");
+            log->Log("Attempting to resolve addresses for missing OpenGL functions.");
+            myGlBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)wglGetProcAddress("glBindVertexArray");
+            myGlGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)wglGetProcAddress("glGenVertexArrays");
+            myGlDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays");
+            if(!myGlBindVertexArray || !myGlDeleteVertexArrays || !myGlGenVertexArrays)
+            {
+                log->Log("WARNING: Could not resolve addresses for glBindVertexArray, glGenVertexAarrays, glDeleteVertexArrays.");
+            }
+            else log->Log("Addresses resolved successfully!");
         }
-        else log->Log("Addresses resolved successfully!");
     }
 };
 
@@ -477,32 +497,51 @@ void ModelRenderer::cleanup()
         delete[] groups;
     groups = NULL;
 
+    if(indicies)
+        delete[] indicies;
+    indicies = NULL;
+
     hasNonTextured = false;
     numTextureGroups = 0;
 
-    glDisableVertexAttribArray(3);
-    glDisableVertexAttribArray(2);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    glDeleteBuffers(1, &iboId);
-
-    if(myGlBindVertexArray)
-    myGlBindVertexArray(0);
-
-    for(int i = 0; i < 4; i++)
+    if(!legacyRendering)
     {
-        if(myGlDeleteVertexArrays)
-            myGlDeleteVertexArrays(1, &vaoIds[i]);
-        glDeleteBuffers(1, &vboIds[i]);
+        glDisableVertexAttribArray(3);
+        glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        glDeleteBuffers(1, &iboId);
+
+        if(myGlBindVertexArray)
+        myGlBindVertexArray(0);
+
+        for(int i = 0; i < 4; i++)
+        {
+            if(myGlDeleteVertexArrays)
+                myGlDeleteVertexArrays(1, &vaoIds[i]);
+            glDeleteBuffers(1, &vboIds[i]);
+        }
+    }
+    else
+    {
+        vertices.clear();
+        verticesNorm.clear();
+        verticesTex.clear();
+        verticesNormTex.clear();
     }
 
     iboId = 0;
     vboIds[0] = vboIds[1] = vboIds[2] = vboIds[3] = 0;
     vaoIds[0] = vaoIds[1] = vaoIds[2] = vaoIds[3] = 0;
+};
+
+void ModelRenderer::useLegacyRendering(bool use)
+{
+    legacyRendering = use;
 };
 
 int ModelRenderer::getNumGroups()
@@ -547,11 +586,8 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
     numTextureGroups = model->getNumTexturesUsed() + (hasNonTextured ? 1 : 0);
     groups = new ModelTextureGroup[numTextureGroups];
 
-    GLushort* indicies = new GLushort[totalTris*3];
-    vector<MyGLVertex> vertices;
-    vector<MyGLVertex_Norm> vertices_norm;
-    vector<MyGLVertex_Tex> vertices_tex;
-    vector<MyGLVertex_Norm_Tex> vertices_norm_tex;
+    if(totalTris > 0)
+    indicies = new GLushort[totalTris*3];
 
     int currentTri[4] = {0, numTris[0], numTris[0]+numTris[1], numTris[0]+numTris[1]+numTris[2]};
 
@@ -692,9 +728,9 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                             if(k < 3 || face.hasAttribute(FACE_QUAD))
                             {
                                 vertIdx[k] = -1;
-                                for(unsigned int l = 0; l < vertices_norm.size(); l++)
+                                for(unsigned int l = 0; l < verticesNorm.size(); l++)
                                 {
-                                    if(memcmp(&vertices_norm[l],&tempVertsNorm[k],sizeof(MyGLVertex_Norm)) == 0)
+                                    if(memcmp(&verticesNorm[l],&tempVertsNorm[k],sizeof(MyGLVertex_Norm)) == 0)
                                     {
                                         vertIdx[k] = l;
                                         break;
@@ -702,8 +738,8 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                                 }
                                 if(vertIdx[k] < 0)
                                 {
-                                    vertIdx[k] = vertices_norm.size();
-                                    vertices_norm.push_back(tempVertsNorm[k]);
+                                    vertIdx[k] = verticesNorm.size();
+                                    verticesNorm.push_back(tempVertsNorm[k]);
                                 }
                             }
                         }
@@ -720,14 +756,14 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                             tempVertsTex[k].g = c[k].g;
                             tempVertsTex[k].b = c[k].b;
                             tempVertsTex[k].a = 255; //TODO: Adjust alpha for transparent models
-                            tempVertsTex[k].s0 = t[k].x;
-                            tempVertsTex[k].t0 = t[k].y;
+                            tempVertsTex[k].s0 = t[k].x/255.0f;
+                            tempVertsTex[k].t0 = t[k].y/255.0f;
                             if(k < 3 || face.hasAttribute(FACE_QUAD))
                             {
                                 vertIdx[k] = -1;
-                                for(unsigned int l = 0; l < vertices_tex.size(); l++)
+                                for(unsigned int l = 0; l < verticesTex.size(); l++)
                                 {
-                                    if(memcmp(&vertices_tex[l],&tempVertsTex[k],sizeof(MyGLVertex_Tex)) == 0)
+                                    if(memcmp(&verticesTex[l],&tempVertsTex[k],sizeof(MyGLVertex_Tex)) == 0)
                                     {
                                         vertIdx[k] = l;
                                         break;
@@ -735,8 +771,8 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                                 }
                                 if(vertIdx[k] < 0)
                                 {
-                                    vertIdx[k] = vertices_tex.size();
-                                    vertices_tex.push_back(tempVertsTex[k]);
+                                    vertIdx[k] = verticesTex.size();
+                                    verticesTex.push_back(tempVertsTex[k]);
                                 }
                             }
                         }
@@ -756,14 +792,14 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                             tempVertsNormTex[k].g = c[k].g;
                             tempVertsNormTex[k].b = c[k].b;
                             tempVertsNormTex[k].a = 255; //TODO: Adjust alpha for transparent models
-                            tempVertsNormTex[k].s0 = t[k].x;
-                            tempVertsNormTex[k].t0 = t[k].y;
+                            tempVertsNormTex[k].s0 = t[k].x/255.0f;
+                            tempVertsNormTex[k].t0 = t[k].y/255.0f;
                             if(k < 3 || face.hasAttribute(FACE_QUAD))
                             {
                                 vertIdx[k] = -1;
-                                for(unsigned int l = 0; l < vertices_norm_tex.size(); l++)
+                                for(unsigned int l = 0; l < verticesNormTex.size(); l++)
                                 {
-                                    if(memcmp(&vertices_norm_tex[l],&tempVertsNormTex[k],sizeof(MyGLVertex_Norm_Tex)) == 0)
+                                    if(memcmp(&verticesNormTex[l],&tempVertsNormTex[k],sizeof(MyGLVertex_Norm_Tex)) == 0)
                                     {
                                         vertIdx[k] = l;
                                         break;
@@ -771,8 +807,8 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
                                 }
                                 if(vertIdx[k] < 0)
                                 {
-                                    vertIdx[k] = vertices_norm_tex.size();
-                                    vertices_norm_tex.push_back(tempVertsNormTex[k]);
+                                    vertIdx[k] = verticesNormTex.size();
+                                    verticesNormTex.push_back(tempVertsNormTex[k]);
                                 }
                             }
                         }
@@ -797,75 +833,94 @@ void ModelRenderer::buildRenderData(const DriverModel* model, const DriverModel*
             groups[i].end[j] = currentTri[j];
         }
     }
-    //Build VAO, VBO, IBO
 
-    glGenBuffers(1, &iboId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort)*totalTris*3, indicies, GL_STATIC_DRAW);
-
-    for(int i = 0; i < 4; i++)
+    if(!legacyRendering)
     {
-        if(numTris[i] != 0)
+        //Build VAO, VBO, IBO
+
+        glGenBuffers(1, &iboId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort)*totalTris*3, indicies, GL_STATIC_DRAW);
+
+        for(int i = 0; i < 4; i++)
         {
-            myGlGenVertexArrays(1, &vaoIds[i]);
-            myGlBindVertexArray(vaoIds[i]);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
-
-            glGenBuffers(1, &vboIds[i]);
-            glBindBuffer(GL_ARRAY_BUFFER, vboIds[i]);
-
-            switch(i)
+            if(numTris[i] != 0)
             {
-                case 0:
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex)*vertices.size(), &vertices[0].x, GL_STATIC_DRAW);
+                myGlGenVertexArrays(1, &vaoIds[i]);
+                myGlBindVertexArray(vaoIds[i]);
+                glDisableVertexAttribArray(3);
+                glDisableVertexAttribArray(2);
+                glDisableVertexAttribArray(1);
+                glDisableVertexAttribArray(0);
 
-                    glEnableVertexAttribArray(0);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex), (const void*)0);  //Vertex
-                    glEnableVertexAttribArray(2);
-                    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex), (const void*)12);  //Color
-                    break;
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
 
-                case 1:
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Norm)*vertices_norm.size(), &vertices_norm[0].x, GL_STATIC_DRAW);
+                glGenBuffers(1, &vboIds[i]);
+                glBindBuffer(GL_ARRAY_BUFFER, vboIds[i]);
 
-                    glEnableVertexAttribArray(0);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm), (const void*)0);  //Vertex
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm), (const void*)12);  //Normal
-                    glEnableVertexAttribArray(2);
-                    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Norm), (const void*)24);  //Color
-                    break;
+                switch(i)
+                {
+                    case 0:
+                        glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex)*vertices.size(), &vertices[0].x, GL_STATIC_DRAW);
 
-                case 2:
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Tex)*vertices_tex.size(), &vertices_tex[0].x, GL_STATIC_DRAW);
+                        glEnableVertexAttribArray(0);
+                        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex), (const void*)0);  //Vertex
+                        glEnableVertexAttribArray(2);
+                        glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex), (const void*)12);  //Color
+                        break;
 
-                    glEnableVertexAttribArray(0);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Tex), (const void*)0);  //Vertex
-                    glEnableVertexAttribArray(2);
-                    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Tex), (const void*)12);  //Color
-                    glEnableVertexAttribArray(3);
-                    glVertexAttribPointer(3, 2, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Tex), (const void*)16);  //TexCoord
-                    break;
+                    case 1:
+                        glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Norm)*verticesNorm.size(), &verticesNorm[0].x, GL_STATIC_DRAW);
 
-                case 3:
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Norm_Tex)*vertices_norm_tex.size(), &vertices_norm_tex[0].x, GL_STATIC_DRAW);
+                        glEnableVertexAttribArray(0);
+                        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm), (const void*)0);  //Vertex
+                        glEnableVertexAttribArray(1);
+                        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm), (const void*)12);  //Normal
+                        glEnableVertexAttribArray(2);
+                        glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Norm), (const void*)24);  //Color
+                        break;
 
-                    glEnableVertexAttribArray(0);
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm_Tex), (const void*)0);  //Vertex
-                    glEnableVertexAttribArray(1);
-                    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm_Tex), (const void*)12);  //Normal
-                    glEnableVertexAttribArray(2);
-                    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Norm_Tex), (const void*)24);  //Color
-                    glEnableVertexAttribArray(3);
-                    glVertexAttribPointer(3, 2, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Norm_Tex), (const void*)28);  //TexCoord
-                    break;
+                    case 2:
+                        glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Tex)*verticesTex.size(), &verticesTex[0].x, GL_STATIC_DRAW);
+
+                        glEnableVertexAttribArray(0);
+                        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Tex), (const void*)0);  //Vertex
+                        glEnableVertexAttribArray(2);
+                        glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Tex), (const void*)12);  //Color
+                        glEnableVertexAttribArray(3);
+                        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Tex), (const void*)16);  //TexCoord
+                        break;
+
+                    case 3:
+                        glBufferData(GL_ARRAY_BUFFER, sizeof(MyGLVertex_Norm_Tex)*verticesNormTex.size(), &verticesNormTex[0].x, GL_STATIC_DRAW);
+
+                        glEnableVertexAttribArray(0);
+                        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm_Tex), (const void*)0);  //Vertex
+                        glEnableVertexAttribArray(1);
+                        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm_Tex), (const void*)12);  //Normal
+                        glEnableVertexAttribArray(2);
+                        glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGLVertex_Norm_Tex), (const void*)24);  //Color
+                        glEnableVertexAttribArray(3);
+                        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(MyGLVertex_Norm_Tex), (const void*)28);  //TexCoord
+                        break;
+                }
             }
         }
+
+        myGlBindVertexArray(0);
+        glDisableVertexAttribArray(3);
+        glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(0);
+
+        delete[] indicies;
+        indicies = NULL;
+        vertices.clear();
+        verticesNorm.clear();
+        verticesTex.clear();
+        verticesNormTex.clear();
     }
-
-    myGlBindVertexArray(0);
-
-    delete[] indicies;
+    //If legacy rendering enabled, indicies and vertices must be kept around for drawing, and are ready for use.
 };
 
 void ModelRenderer::render(int group)
@@ -874,14 +929,86 @@ void ModelRenderer::render(int group)
     {
         for(int i = 0; i < 4; i++)
         {
-            if(vaoIds[i] != 0 && groups[group].end[i]-groups[group].start[i] > 0)
+            if(groups[group].end[i]-groups[group].start[i] > 0)
             {
-                if(shaders)
-                    shaders->bind(i&1, i&2);
-                myGlBindVertexArray(vaoIds[i]);
-                glDrawElements(GL_TRIANGLES, 3*(groups[group].end[i]-groups[group].start[i]), GL_UNSIGNED_SHORT, (const void*)(3*2*groups[group].start[i]));
+                if(!legacyRendering)
+                {
+                    if(vaoIds[i] != 0)
+                    {
+                        if(shaders)
+                            shaders->bind(i&1, i&2);
+                        myGlBindVertexArray(vaoIds[i]);
+                        glDrawElements(GL_TRIANGLES, 3*(groups[group].end[i]-groups[group].start[i]), GL_UNSIGNED_SHORT, (const void*)(3*2*groups[group].start[i]));
+                    }
+                }
+                else
+                {
+                    //Setup data pointers and draw.
+                    switch(i)
+                    {
+                        case 0:
+                            if(vertices.size() > 0)
+                            {
+                                glEnableClientState(GL_VERTEX_ARRAY);
+                                glEnableClientState(GL_COLOR_ARRAY);
+                                glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MyGLVertex), &vertices[0].r);
+                                glVertexPointer(3, GL_FLOAT, sizeof(MyGLVertex), &vertices[0].x);
+                                glDrawElements(GL_TRIANGLES, 3*(groups[group].end[i]-groups[group].start[i]), GL_UNSIGNED_SHORT, (GLvoid*)(indicies+3*(groups[group].start[i])));
+                                glDisableClientState(GL_VERTEX_ARRAY);
+                                glDisableClientState(GL_COLOR_ARRAY);
+                            }
+                            break;
+                        case 1:
+                            if(verticesNorm.size() > 0)
+                            {
+                                glEnableClientState(GL_VERTEX_ARRAY);
+                                glEnableClientState(GL_COLOR_ARRAY);
+                                glEnableClientState(GL_NORMAL_ARRAY);
+                                glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MyGLVertex_Norm), &verticesNorm[0].r);
+                                glVertexPointer(3, GL_FLOAT, sizeof(MyGLVertex_Norm), &verticesNorm[0].x);
+                                glNormalPointer(GL_FLOAT, sizeof(MyGLVertex_Norm), &verticesNorm[0].nx);
+                                glDrawElements(GL_TRIANGLES, 3*(groups[group].end[i]-groups[group].start[i]), GL_UNSIGNED_SHORT, (GLvoid*)(indicies+3*(groups[group].start[i])));
+                                glDisableClientState(GL_VERTEX_ARRAY);
+                                glDisableClientState(GL_COLOR_ARRAY);
+                                glDisableClientState(GL_NORMAL_ARRAY);
+                            }
+                            break;
+                        case 2:
+                            if(verticesTex.size() > 0)
+                            {
+                                glEnableClientState(GL_VERTEX_ARRAY);
+                                glEnableClientState(GL_COLOR_ARRAY);
+                                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                                glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MyGLVertex_Tex), &verticesTex[0].r);
+                                glVertexPointer(3, GL_FLOAT, sizeof(MyGLVertex_Tex), &verticesTex[0].x);
+                                glTexCoordPointer(2, GL_FLOAT, sizeof(MyGLVertex_Tex), &verticesTex[0].s0);
+                                glDrawElements(GL_TRIANGLES, 3*(groups[group].end[i]-groups[group].start[i]), GL_UNSIGNED_SHORT, (GLvoid*)(indicies+3*(groups[group].start[i])));
+                                glDisableClientState(GL_VERTEX_ARRAY);
+                                glDisableClientState(GL_COLOR_ARRAY);
+                                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+                            }
+                            break;
+                        case 3:
+                            if(verticesNormTex.size() > 0)
+                            {
+                                glEnableClientState(GL_VERTEX_ARRAY);
+                                glEnableClientState(GL_COLOR_ARRAY);
+                                glEnableClientState(GL_NORMAL_ARRAY);
+                                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                                glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(MyGLVertex_Norm_Tex), &verticesNormTex[0].r);
+                                glVertexPointer(3, GL_FLOAT, sizeof(MyGLVertex_Norm_Tex), &verticesNormTex[0].x);
+                                glNormalPointer(GL_FLOAT, sizeof(MyGLVertex_Norm_Tex), &verticesNormTex[0].nx);
+                                glTexCoordPointer(2, GL_FLOAT, sizeof(MyGLVertex_Norm_Tex), &verticesNormTex[0].s0);
+                                glDrawElements(GL_TRIANGLES, 3*(groups[group].end[i]-groups[group].start[i]), GL_UNSIGNED_SHORT, (GLvoid*)(indicies+3*(groups[group].start[i])));
+                                glDisableClientState(GL_VERTEX_ARRAY);
+                                glDisableClientState(GL_COLOR_ARRAY);
+                                glDisableClientState(GL_NORMAL_ARRAY);
+                                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+                            }
+                            break;
+                    }//switch
+                }//legacy rendering
             }
-        }
-
+        } //for
     }
 };

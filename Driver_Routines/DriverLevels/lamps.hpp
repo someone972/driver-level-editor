@@ -6,6 +6,7 @@
 #include "../ioFuncs.hpp"
 #include "../../vector.hpp"
 #include "../../Log_Routines/debug_logger.hpp"
+#include "../../EventMgr.hpp"
 
 const int LAMP_NORMAL = 0;
 const int LAMP_FLICKER = 1;
