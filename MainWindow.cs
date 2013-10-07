@@ -14,6 +14,15 @@ namespace DriverLevelEditor
         public MainWindow()
         {
             InitializeComponent();
+
+            Driver.Level level = new Driver.Level();
+
+            // event handler tests
+            level.LevelOpened += (s, e) => { Console.WriteLine("LEVELOPENED:: {0}", ((Driver.DriverEventArgs)e).Message); };
+            level.LevelDestroyed += (s, e) => { Console.WriteLine("LEVELDESTROYED:: {0}", ((Driver.DriverEventArgs)e).Message); };
+
+            level.OpenLevel();
+            level.Dispose();
         }
     }
 }

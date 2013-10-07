@@ -5,8 +5,80 @@ using System.Text;
 
 namespace DriverLevelEditor.Driver
 {
-    sealed class Levels
+    class DriverEventArgs : EventArgs
     {
+        public string Message { get; set; }
+
+        public DriverEventArgs(string s)
+        {
+            Message = s;
+        }
+    }
+
+    interface IDriverLevel
+    {
+        event EventHandler<DriverEventArgs> LevelDestroyed;
+        event EventHandler<DriverEventArgs> LevelReset;
+        event EventHandler<DriverEventArgs> LevelOpened;
+        event EventHandler<DriverEventArgs> LevelSaved;
+    }
+
+    class Level : IDisposable
+    {
+        public event EventHandler<DriverEventArgs> LevelDestroyed;
+        public event EventHandler<DriverEventArgs> LevelReset;
+        public event EventHandler<DriverEventArgs> LevelOpened;
+        public event EventHandler<DriverEventArgs> LevelSaved;
+
+        protected virtual void OnLevelDestroyed(DriverEventArgs e)
+        {
+            EventHandler<DriverEventArgs> handler = LevelDestroyed;
+
+            if (handler != null)
+            {
+                e.Message += String.Format(" destroyed at {0}", DateTime.Now.ToString());
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnLevelReset(DriverEventArgs e)
+        {
+            EventHandler<DriverEventArgs> handler = LevelReset;
+         
+            if (handler != null)
+            {
+                e.Message += String.Format(" reset at {0}", DateTime.Now.ToString());
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnLevelOpened(DriverEventArgs e)
+        {
+            EventHandler<DriverEventArgs> handler = LevelOpened;
+
+            if (handler != null)
+            {
+                e.Message += String.Format(" opened at {0}", DateTime.Now.ToString());
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnLevelSaved(DriverEventArgs e)
+        {
+            EventHandler<DriverEventArgs> handler = LevelSaved;
+
+            if (handler != null)
+            {
+                e.Message += String.Format(" saved at {0}", DateTime.Now.ToString());
+                handler(this, e);
+            }
+        }
+
+        public void Dispose()
+        {
+            OnLevelDestroyed(new DriverEventArgs("SomeLevel.lev"));
+        }
+
         public const uint LEV_TEXTURES                = 0x1;
         public const uint LEV_MODELS                  = 0x2;
         public const uint LEV_WORLD                   = 0x4;
@@ -48,5 +120,17 @@ namespace DriverLevelEditor.Driver
         public const uint BLOCK_LAMPS = 19;
         public const uint BLOCK_CHAIR_PLACEMENT = 20;
         public const uint NUMBER_OF_BLOCKS = 21;
+
+        protected int openBlocks { get; set; }
+
+        public Level()
+        {
+            openBlocks = 0;
+        }
+
+        public void OpenLevel()
+        {
+            OnLevelOpened(new DriverEventArgs("SomeLevel.lev"));
+        }
     }
 }
