@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="DLE" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Option virtualFolders="QtGUI\Textures\;" />
+		<MakeCommands>
+			<Build command="$make -f $makefile $target" />
+			<CompileFile command="$make -f $makefile $file" />
+			<Clean command="$make -f $makefile $target-clean" />
+			<DistClean command="$make -f $makefile distclean$target" />
+			<AskRebuildNeeded command="$make -q -f $makefile $target" />
+			<SilentBuild command="$make -f $makefile $target &gt; $(CMD_NULL)" />
+		</MakeCommands>
+		<Build>
+			<Target title="release">
+				<Option output="../DCI_nosync/bin/Release/DCI" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+				<ExtraCommands>
+					<Add before='$(QTDIR)\bin\qmake &quot;CONFIG+=release&quot; DCI.pro' />
+				</ExtraCommands>
+				<MakeCommands>
+					<Build command="$make -f $makefile $target" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile $target-clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -s -f $makefile $target" />
+				</MakeCommands>
+			</Target>
+			<Target title="debug">
+				<Option output="../DCI_nosync/bin/Debug/DCI" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<ExtraCommands>
+					<Add before='$(QTDIR)\bin\qmake &quot;CONFIG += debug&quot; DCI.pro' />
+				</ExtraCommands>
+				<MakeCommands>
+					<Build command="$make -f $makefile $target" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile $target-clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -f $makefile $target &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="F:/QtSDK/Desktop/Qt/4.7.3/mingw/include" />
+			<Add directory="F:/QtSDK/Desktop/Qt/4.7.3/mingw/include/QtGui" />
+		</Compiler>
+		<Linker>
+			<Add library="QtCore4" />
+			<Add library="QtGui4" />
+			<Add directory="F:/QtSDK/Desktop/Qt/4.7.3/mingw/lib" />
+		</Linker>
+		<Unit filename="DCI.pro" />
+		<Unit filename="Driver_Routines/DriverLevels/chairs.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/chairs.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/heightmaps.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/heightmaps.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/lamps.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/lamps.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/models.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/models.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/randomModelPlacement.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/randomModelPlacement.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/roads.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/roads.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/textures.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/textures.hpp" />
+		<Unit filename="Driver_Routines/DriverLevels/world.cpp" />
+		<Unit filename="Driver_Routines/DriverLevels/world.hpp" />
+		<Unit filename="Driver_Routines/driver_cos.cpp" />
+		<Unit filename="Driver_Routines/driver_cos.hpp" />
+		<Unit filename="Driver_Routines/driver_d3d.cpp" />
+		<Unit filename="Driver_Routines/driver_d3d.hpp" />
+		<Unit filename="Driver_Routines/driver_den.cpp" />
+		<Unit filename="Driver_Routines/driver_den.hpp" />
+		<Unit filename="Driver_Routines/driver_levels.cpp" />
+		<Unit filename="Driver_Routines/driver_levels.hpp" />
+		<Unit filename="Driver_Routines/driver_wdf.cpp" />
+		<Unit filename="Driver_Routines/driver_wdf.hpp" />
+		<Unit filename="Driver_Routines/ioFuncs.cpp" />
+		<Unit filename="Driver_Routines/ioFuncs.hpp" />
+		<Unit filename="EventMgr.hpp" />
+		<Unit filename="Log_Routines/debug_logger.cpp" />
+		<Unit filename="Log_Routines/debug_logger.hpp" />
+		<Unit filename="Log_Routines/default_loggers.cpp" />
+		<Unit filename="Log_Routines/default_loggers.hpp" />
+		<Unit filename="MainWindow.cpp" />
+		<Unit filename="MainWindow.hpp" />
+		<Unit filename="QtGUI/AboutDialog.cpp" />
+		<Unit filename="QtGUI/AboutDialog.hpp" />
+		<Unit filename="QtGUI/CustomLevelDialog.cpp" />
+		<Unit filename="QtGUI/CustomLevelDialog.hpp" />
+		<Unit filename="QtGUI/EventFilters.cpp" />
+		<Unit filename="QtGUI/EventFilters.hpp" />
+		<Unit filename="QtGUI/LevelLoadingDialog.cpp" />
+		<Unit filename="QtGUI/LevelLoadingDialog.hpp" />
+		<Unit filename="QtGUI/Models/DriverModelListModel.cpp" />
+		<Unit filename="QtGUI/Models/DriverModelListModel.hpp" />
+		<Unit filename="QtGUI/Models/ModelDialogs.cpp">
+			<Option virtualFolder="QtGUI/Textures/" />
+		</Unit>
+		<Unit filename="QtGUI/Models/ModelDialogs.hpp" />
+		<Unit filename="QtGUI/Models/ModelProperties.cpp" />
+		<Unit filename="QtGUI/Models/ModelProperties.hpp" />
+		<Unit filename="QtGUI/Models/ModelRenderer.cpp" />
+		<Unit filename="QtGUI/Models/ModelRenderer.hpp" />
+		<Unit filename="QtGUI/Models/ModelView.cpp" />
+		<Unit filename="QtGUI/Models/ModelView.hpp" />
+		<Unit filename="QtGUI/Models/ModelViewPanel.cpp" />
+		<Unit filename="QtGUI/Models/ModelViewPanel.hpp" />
+		<Unit filename="QtGUI/Palettes/AddPaletteDialog.cpp" />
+		<Unit filename="QtGUI/Palettes/AddPaletteDialog.hpp" />
+		<Unit filename="QtGUI/Palettes/PaletteDisplay.cpp" />
+		<Unit filename="QtGUI/Palettes/PaletteDisplay.hpp" />
+		<Unit filename="QtGUI/Palettes/PaletteEditor.cpp" />
+		<Unit filename="QtGUI/Palettes/PaletteEditor.hpp" />
+		<Unit filename="QtGUI/SaveAsDialog.cpp" />
+		<Unit filename="QtGUI/SaveAsDialog.hpp" />
+		<Unit filename="QtGUI/StartScreen.cpp" />
+		<Unit filename="QtGUI/StartScreen.hpp" />
+		<Unit filename="QtGUI/TextureList.cpp" />
+		<Unit filename="QtGUI/TextureList.hpp" />
+		<Unit filename="QtGUI/Textures/TextureBrowser.cpp" />
+		<Unit filename="QtGUI/Textures/TextureBrowser.hpp" />
+		<Unit filename="QtGUI/Textures/TextureDefinitionEditor.cpp" />
+		<Unit filename="QtGUI/Textures/TextureDefinitionEditor.hpp" />
+		<Unit filename="QtGUI/Textures/TextureExportDialog.cpp" />
+		<Unit filename="QtGUI/Textures/TextureExportDialog.hpp" />
+		<Unit filename="QtGUI/Textures/TextureImportDialog.cpp" />
+		<Unit filename="QtGUI/Textures/TextureImportDialog.hpp" />
+		<Unit filename="QtGUI/Textures/TexturePropertiesWidget.cpp" />
+		<Unit filename="QtGUI/Textures/TexturePropertiesWidget.hpp" />
+		<Unit filename="QtGUI/Textures/TextureView.cpp" />
+		<Unit filename="QtGUI/Textures/TextureView.hpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="vector.cpp" />
+		<Unit filename="vector.hpp" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<envvars />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
