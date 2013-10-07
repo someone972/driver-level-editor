@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.TopMenu = new System.Windows.Forms.MenuStrip();
             this.tsFile = new System.Windows.Forms.ToolStripMenuItem();
             this.tsFile_Open = new System.Windows.Forms.ToolStripMenuItem();
             this.tsFile_Open_Custom = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,23 +58,23 @@
             this.tsHelp_HelpTopics = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsHelp_About = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuStrip1.SuspendLayout();
+            this.TopMenu.SuspendLayout();
             this.SuspendLayout();
             // 
-            // menuStrip1
+            // TopMenu
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TopMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsFile,
             this.tsEdit,
             this.tsView,
             this.tsDriver,
             this.tsSettings,
             this.tsHelp});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(446, 24);
-            this.menuStrip1.TabIndex = 0;
-            this.menuStrip1.Text = "menuStrip1";
+            this.TopMenu.Location = new System.Drawing.Point(0, 0);
+            this.TopMenu.Name = "TopMenu";
+            this.TopMenu.Size = new System.Drawing.Size(446, 24);
+            this.TopMenu.TabIndex = 0;
+            this.TopMenu.Text = "menuStrip1";
             // 
             // tsFile
             // 
@@ -289,12 +289,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(446, 397);
-            this.Controls.Add(this.menuStrip1);
-            this.MainMenuStrip = this.menuStrip1;
+            this.Controls.Add(this.TopMenu);
+            this.MainMenuStrip = this.TopMenu;
             this.Name = "MainWindow";
             this.Text = "Driver Level Editor";
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
+            this.TopMenu.ResumeLayout(false);
+            this.TopMenu.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -302,7 +302,7 @@
 
         #endregion
 
-        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.MenuStrip TopMenu;
         private System.Windows.Forms.ToolStripMenuItem tsFile;
         private System.Windows.Forms.ToolStripMenuItem tsFile_Open;
         private System.Windows.Forms.ToolStripMenuItem tsFile_Open_Custom;
