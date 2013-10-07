@@ -3,8 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using DriverLevelEditor.Driver.FileIO;
+
 namespace DriverLevelEditor.Driver
 {
+    interface IDriverLevel
+    {
+        void Cleanup();
+    }
+
     class DriverEventArgs : EventArgs
     {
         public string Message { get; set; }
@@ -15,16 +22,9 @@ namespace DriverLevelEditor.Driver
         }
     }
 
-    interface IDriverLevel
+    class Level : IDriverLevel, IDisposable
     {
-        event EventHandler<DriverEventArgs> LevelDestroyed;
-        event EventHandler<DriverEventArgs> LevelReset;
-        event EventHandler<DriverEventArgs> LevelOpened;
-        event EventHandler<DriverEventArgs> LevelSaved;
-    }
-
-    class Level : IDisposable
-    {
+        #region Level Events
         public event EventHandler<DriverEventArgs> LevelDestroyed;
         public event EventHandler<DriverEventArgs> LevelReset;
         public event EventHandler<DriverEventArgs> LevelOpened;
@@ -44,7 +44,7 @@ namespace DriverLevelEditor.Driver
         protected virtual void OnLevelReset(DriverEventArgs e)
         {
             EventHandler<DriverEventArgs> handler = LevelReset;
-         
+
             if (handler != null)
             {
                 e.Message += String.Format(" reset at {0}", DateTime.Now.ToString());
@@ -72,6 +72,12 @@ namespace DriverLevelEditor.Driver
                 e.Message += String.Format(" saved at {0}", DateTime.Now.ToString());
                 handler(this, e);
             }
+        }
+#endregion
+
+        public void Cleanup()
+        {
+            OnLevelReset(new DriverEventArgs("SomeLevel.lev"));
         }
 
         public void Dispose()

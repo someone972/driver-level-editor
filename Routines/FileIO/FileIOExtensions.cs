@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace DriverLevelEditor.Driver.FileIO
 {
-    #region Extension Methods
     static class BinaryStreamExtensions
     {
         public static void Seek(this BinaryStream b, long offset, SeekOrigin origin)
@@ -17,6 +16,15 @@ namespace DriverLevelEditor.Driver.FileIO
                 throw new Exception("Stream invalid, cannot perform seek operation.");
         }
 
+        /// <summary>Returns a formatted string describing where the cursor is in the file</summary>
+        public static string Tell(this BinaryStream b)
+        {
+            return String.Format("Cursor position: 0x{0:X}", b.Stream.Position);
+        }
+    }
+
+    static class BinaryStreamReaderExtensions
+    {
         public static void Read(this BinaryStream b, byte[] buffer, int index, int count)
         {
             b.Reader.Read(buffer, index, count);
@@ -97,58 +105,6 @@ namespace DriverLevelEditor.Driver.FileIO
             }
 
             return Encoding.UTF8.GetString(str);
-        }
-    }
-    #endregion
-
-    class BinaryStream : IDisposable
-    {
-        public FileStream Stream { get; private set; }
-        public BinaryReader Reader { get; private set; }
-
-        public string Filename { get; private set; }
-
-        private bool CanDisposeStream = false;
-
-        public void Dispose()
-        {
-            if (Reader != null)
-                Reader.Dispose();
-
-            if (CanDisposeStream)
-                Stream.Dispose();
-            else
-                Stream = null;
-        }
-
-        public long Position
-        {
-            get { return Stream.Position; }
-            set { Stream.Position = value; }
-        }
-
-        private void CreateStream(FileStream stream)
-        {
-            Stream = stream;
-            Reader = new BinaryReader(Stream, Encoding.UTF8);
-        }
-
-        public BinaryStream(string filename) : this(filename, FileMode.Open, FileAccess.Read) { }
-        public BinaryStream(string filename, FileMode mode) : this(filename, mode, FileAccess.Read) { }
-        public BinaryStream(string filename, FileMode mode, FileAccess access)
-        {
-            Filename = filename;
-
-            CreateStream(File.Open(Filename, mode, access));
-
-            CanDisposeStream = true;
-        }
-
-        public BinaryStream(string filename, FileStream stream)
-        {
-            Filename = filename;
-
-            CreateStream(stream);
         }
     }
 }

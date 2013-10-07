@@ -56,7 +56,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Routines\Cosmetics.cs" />
-    <Compile Include="Routines\FileIO.cs" />
+    <Compile Include="Routines\FileIO\FileIO.cs" />
+    <Compile Include="Routines\FileIO\FileIOExtensions.cs" />
+    <Compile Include="Routines\IDriverFile.cs" />
     <Compile Include="Routines\Palettes.cs" />
     <Compile Include="Routines\Denting.cs" />
     <Compile Include="Routines\Levels.cs" />
