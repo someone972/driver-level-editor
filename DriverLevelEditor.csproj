@@ -63,6 +63,12 @@
     <Compile Include="Routines\Denting.cs" />
     <Compile Include="Routines\Levels.cs" />
     <Compile Include="Routines\Wheels.cs" />
+    <Compile Include="TexturesWidget.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TexturesWidget.Designer.cs">
+      <DependentUpon>TexturesWidget.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
@@ -76,6 +82,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="TexturesWidget.resx">
+      <DependentUpon>TexturesWidget.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

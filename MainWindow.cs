@@ -14,9 +14,16 @@ namespace DriverLevelEditor
 {
     public partial class MainWindow : Form
     {
+        TexturesWidget texWidget = new TexturesWidget();
+
         public MainWindow()
         {
             InitializeComponent();
+
+            texWidget.Dock = DockStyle.Fill;
+
+            texWidget.Parent = this;
+            texWidget.Show();
 
             Level level = new Level();
 
@@ -175,6 +182,16 @@ namespace DriverLevelEditor
             MessageBox.Show(String.Format(
                 "Load Car Park files:\n\n" +
                 "{0}", GetFileNames(names)));
+        }
+
+        private void ViewTextures(object sender, EventArgs e)
+        {
+            this.WidgetPanel.Controls.Add(texWidget);
+        }
+
+        private void ViewModels(object sender, EventArgs e)
+        {
+            this.WidgetPanel.Controls.Clear();
         }
     }
 }

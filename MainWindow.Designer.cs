@@ -58,6 +58,7 @@
             this.tsHelp_HelpTopics = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsHelp_About = new System.Windows.Forms.ToolStripMenuItem();
+            this.WidgetPanel = new System.Windows.Forms.Panel();
             this.TopMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,11 +71,11 @@
             this.tsDriver,
             this.tsSettings,
             this.tsHelp});
+            this.TopMenu.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.TopMenu.Location = new System.Drawing.Point(0, 0);
             this.TopMenu.Name = "TopMenu";
-            this.TopMenu.Size = new System.Drawing.Size(446, 24);
+            this.TopMenu.Size = new System.Drawing.Size(664, 24);
             this.TopMenu.TabIndex = 0;
-            this.TopMenu.Text = "menuStrip1";
             // 
             // tsFile
             // 
@@ -100,85 +101,85 @@
             this.tsFile_Open_Desert,
             this.tsFile_Open_CarPark});
             this.tsFile_Open.Name = "tsFile_Open";
-            this.tsFile_Open.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open.Size = new System.Drawing.Size(123, 22);
             this.tsFile_Open.Text = "Open";
             // 
             // tsFile_Open_Custom
             // 
             this.tsFile_Open_Custom.Name = "tsFile_Open_Custom";
-            this.tsFile_Open_Custom.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_Custom.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_Custom.Text = "Choose Files...";
             this.tsFile_Open_Custom.Click += new System.EventHandler(this.LoadCustomFiles);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(146, 6);
             // 
             // tsFile_Open_Miami
             // 
             this.tsFile_Open_Miami.Name = "tsFile_Open_Miami";
-            this.tsFile_Open_Miami.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_Miami.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_Miami.Text = "Miami";
             this.tsFile_Open_Miami.Click += new System.EventHandler(this.LoadMiamiFiles);
             // 
             // tsFile_Open_Frisco
             // 
             this.tsFile_Open_Frisco.Name = "tsFile_Open_Frisco";
-            this.tsFile_Open_Frisco.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_Frisco.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_Frisco.Text = "San Francisco";
             this.tsFile_Open_Frisco.Click += new System.EventHandler(this.LoadFriscoFiles);
             // 
             // tsFile_Open_LA
             // 
             this.tsFile_Open_LA.Name = "tsFile_Open_LA";
-            this.tsFile_Open_LA.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_LA.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_LA.Text = "Los Angeles";
             this.tsFile_Open_LA.Click += new System.EventHandler(this.LoadLosAngelesFiles);
             // 
             // tsFile_Open_NewYork
             // 
             this.tsFile_Open_NewYork.Name = "tsFile_Open_NewYork";
-            this.tsFile_Open_NewYork.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_NewYork.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_NewYork.Text = "New York";
             this.tsFile_Open_NewYork.Click += new System.EventHandler(this.LoadNewYorkFiles);
             // 
             // tsFile_Open_Newcastle
             // 
             this.tsFile_Open_Newcastle.Name = "tsFile_Open_Newcastle";
-            this.tsFile_Open_Newcastle.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_Newcastle.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_Newcastle.Text = "Newcastle";
             this.tsFile_Open_Newcastle.Click += new System.EventHandler(this.LoadNewcastleFiles);
             // 
             // tsFile_Open_Desert
             // 
             this.tsFile_Open_Desert.Name = "tsFile_Open_Desert";
-            this.tsFile_Open_Desert.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_Desert.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_Desert.Text = "Desert";
             this.tsFile_Open_Desert.Click += new System.EventHandler(this.LoadTrainFiles);
             // 
             // tsFile_Open_CarPark
             // 
             this.tsFile_Open_CarPark.Name = "tsFile_Open_CarPark";
-            this.tsFile_Open_CarPark.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Open_CarPark.Size = new System.Drawing.Size(149, 22);
             this.tsFile_Open_CarPark.Text = "Car Park";
             this.tsFile_Open_CarPark.Click += new System.EventHandler(this.LoadIViewFiles);
             // 
             // tsFile_SaveAs
             // 
             this.tsFile_SaveAs.Name = "tsFile_SaveAs";
-            this.tsFile_SaveAs.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_SaveAs.Size = new System.Drawing.Size(123, 22);
             this.tsFile_SaveAs.Text = "Save As...";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(120, 6);
             // 
             // tsFile_Exit
             // 
             this.tsFile_Exit.Name = "tsFile_Exit";
-            this.tsFile_Exit.Size = new System.Drawing.Size(152, 22);
+            this.tsFile_Exit.Size = new System.Drawing.Size(123, 22);
             this.tsFile_Exit.Text = "Exit";
             // 
             // tsEdit
@@ -203,12 +204,14 @@
             this.tsView_Models.Name = "tsView_Models";
             this.tsView_Models.Size = new System.Drawing.Size(173, 22);
             this.tsView_Models.Text = "Models";
+            this.tsView_Models.Click += new System.EventHandler(this.ViewModels);
             // 
             // tsView_Textures
             // 
             this.tsView_Textures.Name = "tsView_Textures";
             this.tsView_Textures.Size = new System.Drawing.Size(173, 22);
             this.tsView_Textures.Text = "Textures";
+            this.tsView_Textures.Click += new System.EventHandler(this.ViewTextures);
             // 
             // tsView_TextureDefs
             // 
@@ -270,28 +273,42 @@
             // tsHelp_HelpTopics
             // 
             this.tsHelp_HelpTopics.Name = "tsHelp_HelpTopics";
-            this.tsHelp_HelpTopics.Size = new System.Drawing.Size(152, 22);
+            this.tsHelp_HelpTopics.Size = new System.Drawing.Size(137, 22);
             this.tsHelp_HelpTopics.Text = "Help Topics";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(134, 6);
             // 
             // tsHelp_About
             // 
             this.tsHelp_About.Name = "tsHelp_About";
-            this.tsHelp_About.Size = new System.Drawing.Size(152, 22);
+            this.tsHelp_About.Size = new System.Drawing.Size(137, 22);
             this.tsHelp_About.Text = "About";
+            // 
+            // WidgetPanel
+            // 
+            this.WidgetPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.WidgetPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.WidgetPanel.Location = new System.Drawing.Point(0, 24);
+            this.WidgetPanel.Name = "WidgetPanel";
+            this.WidgetPanel.Size = new System.Drawing.Size(664, 528);
+            this.WidgetPanel.TabIndex = 1;
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(446, 397);
+            this.ClientSize = new System.Drawing.Size(664, 552);
+            this.Controls.Add(this.WidgetPanel);
             this.Controls.Add(this.TopMenu);
+            this.DoubleBuffered = true;
             this.MainMenuStrip = this.TopMenu;
+            this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(680, 590);
             this.Name = "MainWindow";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Driver Level Editor";
             this.TopMenu.ResumeLayout(false);
             this.TopMenu.PerformLayout();
@@ -332,6 +349,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsHelp_HelpTopics;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem tsHelp_About;
+        private System.Windows.Forms.Panel WidgetPanel;
     }
 }
 
