@@ -24,6 +24,283 @@ namespace DriverLevelEditor.Driver
 
     class Level : IDriverLevel, IDisposable
     {
+        class BlockTypes
+        {
+            class SectorTextureUsageBlock
+            {
+                class SectorTextureList
+                {
+                    public byte ID { get; set; }
+                }
+
+                public SectorTextureList TextureList { get; set; }
+            }
+
+            class HeightmapBlock
+            {
+                class HeightmapTableData
+                {
+                    public uint NumSectorsWide { get; set; }
+                    public uint NumSectorsTall { get; set; }
+
+                    public uint[] OffsetTable { get; set; }
+                    public uint[] Data { get; set; }
+                }
+
+                public uint NumTilesWide { get; set; }
+                public uint NumTilesTall { get; set; }
+
+                public HeightmapTableData HeightmapTable { get; set; }
+            }
+
+            class HeightmapTilesBlock
+            {
+                class HeightmapTileFace
+                {
+                    class FaceVertex
+                    {
+                        public int X { get; set; }
+                        public int Y { get; set; }
+                    }
+
+                    class FaceNormal
+                    {
+                        public float X { get; set; }
+                        public float Y { get; set; }
+                        public float Z { get; set; }
+                        public float W { get; set; }
+                    }
+
+                    public List<FaceVertex> Vertices { get; set; }
+
+                    public FaceNormal Normal { get; set; }
+
+                    public uint NumVerts { get; set; }
+
+                }
+
+                class HeightmapTile
+                {
+                    public ushort ModelIndex { get; set; }
+                    public uint UnknownData { get; set; }
+                    public ushort NumFaces { get; set; }
+
+                    public List<HeightmapTileFace> Faces { get; set; }
+
+                }
+
+                public uint NumTiles { get; set; }
+
+                public List<HeightmapTile> Tiles { get; set; }
+
+            }
+
+            class IntersectionsBlock
+            {
+                class IntersectionConnection
+                {
+                    public short IntersectionIndex { get; set; }
+                    public short RoadIndex { get; set; }
+
+                    public ushort TrafficControlBitfield { get; set; }
+                }
+
+                class Intersection
+                {
+                    public ushort Index { get; set; }
+
+                    public byte HasTrafficLights { get; set; }
+                    public byte IsJunction { get; set; }
+
+                    public uint UnknownData { get; set; }
+
+                    public List<IntersectionConnection> IntersectionConnections { get; set; }
+
+                    public short OriginTileX { get; set; }
+                    public short OriginTileZ { get; set; }
+                }
+
+                public uint NumIntersections { get; set; }
+
+                public List<Intersection> Intersections { get; set; }
+            }
+
+            class IntersectionPositionsBlock
+            {
+                class Position
+                {
+                    public int X { get; set; }
+                    public int Y { get; set; }
+                }
+
+                public uint NumIntersections { get; set; }
+
+                public List<Position> IntersectionPositions { get; set; }
+            }
+
+            class RoadTableBlock
+            {
+                class RoadTableData
+                {
+                    public uint NumSectorsWide { get; set; }
+                    public uint NumSectorsTall { get; set; }
+
+                    public uint[] OffsetTable { get; set; }
+                    public ushort[] Data { get; set; }
+                }
+
+                public uint NumTilesWide { get; set; }
+                public uint NumTilesTall { get; set; }
+
+                public RoadTableData RoadTable { get; set; }
+            }
+
+            class RoadConnectionsBlock
+            {
+                class RoadConnection
+                {
+                    public ushort RoadIndex { get; set; }
+
+                    public ushort StartIntersectionIndex { get; set; }
+                    public ushort EndIntersectionIndex { get; set; }
+
+                    public byte NumLanes { get; set; }
+                    public byte LaneDirectionBitfield { get; set; }
+
+                    public ushort RoadLength { get; set; }
+
+                    public byte RoadFlags { get; set; }
+                    public byte RoadDirection { get; set; }
+
+                    public short OriginTileX { get; set; }
+                    public short OriginTileZ { get; set; }
+                }
+
+                public uint NumRoads { get; set; }
+
+                public List<RoadConnection> RoadConnections { get; set; }
+            }
+
+            class RoadSectionsBlock
+            {
+                class RoadSection
+                {
+                    public int StartTileX { get; set; }
+                    public int StartTileZ { get; set; }
+
+                    public int EndTileX { get; set; }
+                    public int EndTileZ { get; set; }
+
+                    public byte Direction { get; set; }
+                }
+
+                public uint NumRoads { get; set; }
+
+                List<RoadSection> RoadSections { get; set; }
+            }
+
+            class TextureAtlasInfo
+            {
+                class TextureAtlasDefinition
+                {
+                    public string Name { get; set; }
+
+                    public byte X { get; set; }
+                    public byte Y { get; set; }
+                    public byte W { get; set; }
+                    public byte H { get; set; }
+                }
+
+                public uint NumDefs { get; set; }
+
+                public List<TextureAtlasDefinition> Definitions { get; set; }
+            }
+
+            class ChairPlacementBlock
+            {
+                class ChairList
+                {
+                    public uint VisTileIndex { get; set; }
+                    public uint NumChairs { get; set; }
+
+                    public List<Chair> Chairs { get; set; }
+                }
+
+                class Chair
+                {
+                    public int X { get; set; }
+                    public int Z { get; set; }
+
+                    public int InUse { get; set; }
+
+                    public short RotX { get; set; }
+                    public short RotY { get; set; }
+                    public short RotZ { get; set; }
+                }
+
+                public const uint Magic = 0x52484347; //GCHR
+                public const uint Version = 0x2;
+
+                public uint NumVisTilesWide { get; set; }
+                public uint NumVisTilesTall { get; set; }
+                public uint NumChairLists { get; set; }
+
+                public List<ChairList> ChairLists { get; set; }   
+            }
+
+            class LampBlock
+            {
+                class LampList
+                {
+                    public uint VisTileIndex { get; set; }
+                    public uint NumLamps { get; set; }
+
+                    public List<Lamp> Lamps { get; set; }
+                }
+
+                class Lamp
+                {
+                    enum LampTypes
+                    {
+                        Normal = 0,
+                        Flicker = 1,
+                        Strobe = 2
+                    }
+
+                    public LampTypes Type { get; set; }
+
+                    public float Radius { get; set; }
+
+                    public float X { get; set; }
+                    public float Y { get; set; }
+                    public float Z { get; set; }
+
+                    public uint R { get; set; }
+                    public uint G { get; set; }
+                    public uint B { get; set; }
+                }
+
+                public const uint Magic = 0x504D4C47; //GLMP
+
+                public float Version { get; set; }
+
+                public uint NumVisTilesWide { get; set; }
+                public uint NumVisTilesTall { get; set; }
+                public uint NumLampLights { get; set; }
+
+                public List<LampList> LampLists { get; set; }
+            }
+
+            class BlockData
+            {
+                public uint Type { get; set; }
+                public uint Size { get; set; }
+            }
+
+            public uint NumBlocks { get; set; }
+            public List<BlockData> Blocks { get; set; }
+        }
+
         #region Level Events
         public event EventHandler<DriverEventArgs> LevelDestroyed;
         public event EventHandler<DriverEventArgs> LevelReset;
