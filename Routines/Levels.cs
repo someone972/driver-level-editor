@@ -7,12 +7,12 @@ using DriverLevelEditor.Driver.FileIO;
 
 namespace DriverLevelEditor.Driver
 {
-    interface IDriverLevel
+    public interface IDriverLevel
     {
         void Cleanup();
     }
 
-    class DriverEventArgs : EventArgs
+    public class DriverEventArgs : EventArgs
     {
         public string Message { get; set; }
 
@@ -22,13 +22,13 @@ namespace DriverLevelEditor.Driver
         }
     }
 
-    class Level : IDriverLevel, IDisposable
+    public class Level : IDriverLevel, IDisposable
     {
-        class BlockTypes
+        public class BlockTypes
         {
-            class SectorTextureUsageBlock
+            public class SectorTextureUsageBlock
             {
-                class SectorTextureList
+                public class SectorTextureList
                 {
                     public byte ID { get; set; }
                 }
@@ -36,9 +36,9 @@ namespace DriverLevelEditor.Driver
                 public SectorTextureList TextureList { get; set; }
             }
 
-            class HeightmapBlock
+            public class HeightmapBlock
             {
-                class HeightmapTableData
+                public class HeightmapTableData
                 {
                     public uint NumSectorsWide { get; set; }
                     public uint NumSectorsTall { get; set; }
@@ -53,17 +53,17 @@ namespace DriverLevelEditor.Driver
                 public HeightmapTableData HeightmapTable { get; set; }
             }
 
-            class HeightmapTilesBlock
+            public class HeightmapTilesBlock
             {
-                class HeightmapTileFace
+                public class HeightmapTileFace
                 {
-                    class FaceVertex
+                    public class FaceVertex
                     {
                         public int X { get; set; }
                         public int Y { get; set; }
                     }
 
-                    class FaceNormal
+                    public class FaceNormal
                     {
                         public float X { get; set; }
                         public float Y { get; set; }
@@ -79,7 +79,7 @@ namespace DriverLevelEditor.Driver
 
                 }
 
-                class HeightmapTile
+                public class HeightmapTile
                 {
                     public ushort ModelIndex { get; set; }
                     public uint UnknownData { get; set; }
@@ -95,9 +95,9 @@ namespace DriverLevelEditor.Driver
 
             }
 
-            class IntersectionsBlock
+            public class IntersectionsBlock
             {
-                class IntersectionConnection
+                public class IntersectionConnection
                 {
                     public short IntersectionIndex { get; set; }
                     public short RoadIndex { get; set; }
@@ -105,7 +105,7 @@ namespace DriverLevelEditor.Driver
                     public ushort TrafficControlBitfield { get; set; }
                 }
 
-                class Intersection
+                public class Intersection
                 {
                     public ushort Index { get; set; }
 
@@ -125,9 +125,9 @@ namespace DriverLevelEditor.Driver
                 public List<Intersection> Intersections { get; set; }
             }
 
-            class IntersectionPositionsBlock
+            public class IntersectionPositionsBlock
             {
-                class Position
+                public class Position
                 {
                     public int X { get; set; }
                     public int Y { get; set; }
@@ -138,9 +138,9 @@ namespace DriverLevelEditor.Driver
                 public List<Position> IntersectionPositions { get; set; }
             }
 
-            class RoadTableBlock
+            public class RoadTableBlock
             {
-                class RoadTableData
+                public class RoadTableData
                 {
                     public uint NumSectorsWide { get; set; }
                     public uint NumSectorsTall { get; set; }
@@ -155,9 +155,9 @@ namespace DriverLevelEditor.Driver
                 public RoadTableData RoadTable { get; set; }
             }
 
-            class RoadConnectionsBlock
+            public class RoadConnectionsBlock
             {
-                class RoadConnection
+                public class RoadConnection
                 {
                     public ushort RoadIndex { get; set; }
 
@@ -181,9 +181,9 @@ namespace DriverLevelEditor.Driver
                 public List<RoadConnection> RoadConnections { get; set; }
             }
 
-            class RoadSectionsBlock
+            public class RoadSectionsBlock
             {
-                class RoadSection
+                public class RoadSection
                 {
                     public int StartTileX { get; set; }
                     public int StartTileZ { get; set; }
@@ -199,9 +199,9 @@ namespace DriverLevelEditor.Driver
                 List<RoadSection> RoadSections { get; set; }
             }
 
-            class TextureAtlasInfo
+            public class TextureAtlasInfo
             {
-                class TextureAtlasDefinition
+                public class TextureAtlasDefinition
                 {
                     public string Name { get; set; }
 
@@ -216,9 +216,9 @@ namespace DriverLevelEditor.Driver
                 public List<TextureAtlasDefinition> Definitions { get; set; }
             }
 
-            class ChairPlacementBlock
+            public class ChairPlacementBlock
             {
-                class ChairList
+                public class ChairList
                 {
                     public uint VisTileIndex { get; set; }
                     public uint NumChairs { get; set; }
@@ -226,7 +226,7 @@ namespace DriverLevelEditor.Driver
                     public List<Chair> Chairs { get; set; }
                 }
 
-                class Chair
+                public class Chair
                 {
                     public int X { get; set; }
                     public int Z { get; set; }
@@ -248,9 +248,9 @@ namespace DriverLevelEditor.Driver
                 public List<ChairList> ChairLists { get; set; }   
             }
 
-            class LampBlock
+            public class LampBlock
             {
-                class LampList
+                public class LampList
                 {
                     public uint VisTileIndex { get; set; }
                     public uint NumLamps { get; set; }
@@ -258,9 +258,9 @@ namespace DriverLevelEditor.Driver
                     public List<Lamp> Lamps { get; set; }
                 }
 
-                class Lamp
+                public class Lamp
                 {
-                    enum LampTypes
+                    public enum LampTypes
                     {
                         Normal = 0,
                         Flicker = 1,
@@ -291,7 +291,7 @@ namespace DriverLevelEditor.Driver
                 public List<LampList> LampLists { get; set; }
             }
 
-            class BlockData
+            public class BlockData
             {
                 public uint Type { get; set; }
                 public uint Size { get; set; }
@@ -362,7 +362,7 @@ namespace DriverLevelEditor.Driver
             OnLevelDestroyed(new DriverEventArgs("SomeLevel.lev"));
         }
 
-        public enum BlockLoadFlags
+        public enum BlockLoadFlags : uint
         {
             Textures                = 0x1,
             Models                  = 0x2,
